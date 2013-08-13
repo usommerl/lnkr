@@ -75,8 +75,8 @@ info "Modify push-url of all submodules from github.com (Use SSH instead of HTTP
     '
 }
 
-function _headline() {
-    echo -e ">>>>>> \e[1;37m$@\e[0m"
+function _blockMark() {
+    echo -e "------ \e[1;37m$@\e[0m"
 }
 
 function _restoreEntry() {
@@ -141,19 +141,21 @@ else
 fi
 
 if [ "$1" = $_optionRestoreShort ] || [ "$1" = $_optionRestoreLong ]; then
-    _headline "$_headlinePrefix Restore backups"
+    _blockMark "$_headlinePrefix Restore backups"
     if declare -F RESTORE &> /dev/null; then
         RESTORE
     else
         _defaultRestoreProcedure
     fi
+    _blockMark
 elif [ "$1" = $_optionInstallShort ] || [ "$1" = $_optionInstallLong ]; then
-    _headline "$_headlinePrefix Install configuration"
+    _blockMark "$_headlinePrefix Install configuration"
     if declare -F INSTALL &> /dev/null; then
         INSTALL
     else
         fail "Install function not defined."
     fi
+    _blockMark
 else
     _printHelp
 fi
