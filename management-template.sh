@@ -135,27 +135,27 @@ function _printHelp() {
 }
 
 if [ -n "$MODULE" ]; then
-    _headlinePrefix="$(echo $MODULE | tr [:lower:] [:upper:]) -"
+    _prefix="$(echo $MODULE | tr [:lower:] [:upper:]) -"
 else
     fail "Module name not defined."
 fi
 
 if [ "$1" = $_optionRestoreShort ] || [ "$1" = $_optionRestoreLong ]; then
-    _blockMark "$_headlinePrefix Restore backups"
+    _blockMark "$_prefix Restore backups"
     if declare -F RESTORE &> /dev/null; then
         RESTORE
     else
         _defaultRestoreProcedure
     fi
-    _blockMark
+    _blockMark "$_prefix End"
 elif [ "$1" = $_optionInstallShort ] || [ "$1" = $_optionInstallLong ]; then
-    _blockMark "$_headlinePrefix Install configuration"
+    _blockMark "$_prefix Install configuration"
     if declare -F INSTALL &> /dev/null; then
         INSTALL
     else
         fail "Install function not defined."
     fi
-    _blockMark
+    _blockMark "$_prefix End"
 else
     _printHelp
 fi
