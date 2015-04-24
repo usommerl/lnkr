@@ -43,6 +43,7 @@ function link() {
         echo $_backupLocation >> $_backupLog
     fi
 
+    mkdir -p $(dirname $_linkname)
     info "ln -sf $(ln -vsfT $_target $_linkname)"
 }
 
