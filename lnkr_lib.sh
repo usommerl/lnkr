@@ -2,6 +2,7 @@
 
 ############################################################## begin-template
 
+#CURRENT_DIRECTORY=$(git rev-parse --show-toplevel)
 _backupLog=$CURRENT_DIRECTORY/.backup.log
 _optionInstallShort='-i'
 _optionInstallLong='--install'
@@ -125,7 +126,7 @@ function _printHelp() {
     echo -e "$_indentParameter $_optionInstallShort, $_optionInstallLong\n"
     echo -e "$_indent Installs the configuration settings contained in this module"
     echo -e "$_indent by creating symbolic links in the required locations. This"
-    echo -e "$_indent operation won't overwrite any existing configuration files." 
+    echo -e "$_indent operation won't overwrite any existing configuration files."
     echo -e "$_indent It will automatically create backups if there are any con-"
     echo -e "$_indent flicting regular files or folders."
     echo ""

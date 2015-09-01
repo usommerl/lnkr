@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Script to manage the lifecycle of this lnkr module.
+# Run it without arguments for further information.
+
+#function install_hook() {
+#}
+
+#################################################################### bootstrap [
+function bootstrap() {
+  local lib_name=lnkr_lib.sh
+  local lib_path=$(readlink -e $(find . -name "${lib_name}" -printf '%d %p\n' |\
+                                 sort -n                                      |\
+                                 head -n 1                                    |\
+                                 cut -d ' ' -f 2))
+  command -v git &>/dev/null && {
+    git submodule --quiet update --init "$(dirname "${lib_path}")"
+    [ -e "${lib_path}" ] && source "${lib_path}" "$@"
+  }
+  echo "Bootstrap failed. Aborting."; exit 1
+}
+bootstrap "$@"
+#################################################################### bootstrap ]
