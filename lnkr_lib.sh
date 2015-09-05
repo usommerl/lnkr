@@ -2,7 +2,7 @@
 
 set -e
 declare -r CURRENT_DIRECTORY=$(git rev-parse --show-toplevel)
-declare -r MODULE_NAME=$(basename $CURRENT_DIRECTORY)
+declare -r REPO_NAME=$(basename $CURRENT_DIRECTORY)
 declare -r LOGFILE=$CURRENT_DIRECTORY/.lnkr.log
 declare -r INSTALL_SWITCH_SHORT='-i'
 declare -r INSTALL_SWITCH_LONG='--install'
@@ -118,23 +118,23 @@ function _defaultRestoreProcedure() {
 }
 
 function remove() {
-  _blockMark "${MODULE_NAME} Restore backups"
+  _blockMark "${REPO_NAME} Restore backups"
   if declare -F RESTORE &> /dev/null; then
       RESTORE
   else
       _defaultRestoreProcedure
   fi
-  _blockMark "${MODULE_NAME} End"
+  _blockMark "${REPO_NAME} End"
 }
 
 function install {
-  _blockMark "${MODULE_NAME} Install configuration"
+  _blockMark "${REPO_NAME} Install configuration"
   if declare -F install_hook &> /dev/null; then
       install_hook
   else
       fail "Install hook not defined."
   fi
-  _blockMark "${MODULE_NAME} End"
+  _blockMark "${REPO_NAME} End"
 }
 
 
