@@ -18,7 +18,7 @@ function warn() {
 }
 
 function fail() {
-    echo -e "\e[1;31m[fail]\e[0m $@ Aborting."
+    echo -e "\e[1;31m[fail]\e[0m $@ Aborting." >&2
     exit 1
 }
 
