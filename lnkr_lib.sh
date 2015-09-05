@@ -127,7 +127,7 @@ function remove() {
   _blockMark "${REPO_NAME} End"
 }
 
-function install {
+function install() {
   _blockMark "${REPO_NAME} Install configuration"
   if declare -F install_hook &> /dev/null; then
       install_hook
