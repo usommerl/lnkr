@@ -140,21 +140,22 @@ function install {
 
 
 function print_help() {
-    local _indentParameter='  '
-    local _indent='      '
-    echo -e "\nControls the lifecycle of this module\n"
-    echo -e "SYNOPSIS: $(basename $0) [OPTION]\n"
-    echo -e "$_indentParameter $INSTALL_SWITCH_SHORT, $INSTALL_SWITCH_LONG\n"
-    echo -e "$_indent Installs the configuration settings contained in this module"
-    echo -e "$_indent by creating symbolic links in the required locations. This"
-    echo -e "$_indent operation won't overwrite any existing configuration files."
-    echo -e "$_indent It will automatically create backups if there are any con-"
-    echo -e "$_indent flicting regular files or folders."
-    echo ""
-    echo -e "$_indentParameter $REMOVE_SWITCH_SHORT, $REMOVE_SWITCH_LONG\n"
-    echo -e "$_indent Restores backups which where made during a previous install"
-    echo -e "$_indent operation."
-    echo ""
+  local script_name=$(basename $0)
+  local indent_option='  '
+  local indent='      '
+  echo ""
+  echo -e "SYNOPSIS: ${script_name} [OPTION]\n"
+  echo -e "${indent_option} ${INSTALL_SWITCH_SHORT}, ${INSTALL_SWITCH_LONG}\n"
+  echo -e "${indent} Executes the install procedure defined in install_hook."
+  echo -e "${indent} Symbolic links that are created with lnk and su_lnk won't"
+  echo -e "${indent} overwrite existing files. These functions create backups"
+  echo -e "${indent} that will be restored automatically if you run this script"
+  echo -e "${indent} with the ${REMOVE_SWITCH_LONG} option."
+  echo ""
+  echo -e "${indent_option} ${REMOVE_SWITCH_SHORT}, ${REMOVE_SWITCH_LONG}\n"
+  echo -e "${indent} Removes created links and restores all backups that where"
+  echo -e "${indent} made during a previous install."
+  echo ""
 }
 
 function main() {
