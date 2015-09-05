@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-############################################################## begin-template
+set -e
+declare -r CURRENT_DIRECTORY=$(git rev-parse --show-toplevel)
+declare -r MODULE_NAME=$(basename $CURRENT_DIRECTORY)
+declare -r INSTALL_SWITCH_SHORT='-i'
+declare -r INSTALL_SWITCH_LONG='--install'
+declare -r REMOVE_SWITCH_SHORT='-r'
+declare -r REMOVE_SWITCH_LONG='--remove'
 
-#CURRENT_DIRECTORY=$(git rev-parse --show-toplevel)
 _backupLog=$CURRENT_DIRECTORY/.backup.log
-_optionInstallShort='-i'
-_optionInstallLong='--install'
-_optionRestoreShort='-r'
-_optionRestoreLong='--restore-backups'
 
 function info() {
     echo -e "[info] $@"
@@ -117,51 +118,58 @@ function _defaultRestoreProcedure() {
     fi
 }
 
+function remove() {
+  _blockMark "${MODULE_NAME} Restore backups"
+  if declare -F RESTORE &> /dev/null; then
+      RESTORE
+  else
+      _defaultRestoreProcedure
+  fi
+  _blockMark "${MODULE_NAME} End"
+}
 
-function _printHelp() {
+function install {
+  _blockMark "${MODULE_NAME} Install configuration"
+  if declare -F install_hook &> /dev/null; then
+      install_hook
+  else
+      fail "Install hook not defined."
+  fi
+  _blockMark "${MODULE_NAME} End"
+}
+
+
+function print_help() {
     local _indentParameter='  '
     local _indent='      '
     echo -e "\nControls the lifecycle of this module\n"
     echo -e "SYNOPSIS: $(basename $0) [OPTION]\n"
-    echo -e "$_indentParameter $_optionInstallShort, $_optionInstallLong\n"
+    echo -e "$_indentParameter $INSTALL_SWITCH_SHORT, $INSTALL_SWITCH_LONG\n"
     echo -e "$_indent Installs the configuration settings contained in this module"
     echo -e "$_indent by creating symbolic links in the required locations. This"
     echo -e "$_indent operation won't overwrite any existing configuration files."
     echo -e "$_indent It will automatically create backups if there are any con-"
     echo -e "$_indent flicting regular files or folders."
     echo ""
-    echo -e "$_indentParameter $_optionRestoreShort, $_optionRestoreLong\n"
+    echo -e "$_indentParameter $REMOVE_SWITCH_SHORT, $REMOVE_SWITCH_LONG\n"
     echo -e "$_indent Restores backups which where made during a previous install"
     echo -e "$_indent operation."
     echo ""
 }
 
-if [ -n "$MODULE" ]; then
-    _prefix="$(echo $MODULE | tr [:lower:] [:upper:]) -"
-else
-    fail "Module name not defined."
-fi
+function main() {
+  case "$1" in
+    $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
+      remove
+      ;;
+    $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
+      install
+      ;;
+    *)
+      print_help
+      ;;
+  esac
+}
 
-if [ "$1" = $_optionRestoreShort ] || [ "$1" = $_optionRestoreLong ]; then
-    _blockMark "$_prefix Restore backups"
-    if declare -F RESTORE &> /dev/null; then
-        RESTORE
-    else
-        _defaultRestoreProcedure
-    fi
-    _blockMark "$_prefix End"
-elif [ "$1" = $_optionInstallShort ] || [ "$1" = $_optionInstallLong ]; then
-    _blockMark "$_prefix Install configuration"
-    if declare -F INSTALL &> /dev/null; then
-        INSTALL
-    else
-        fail "Install function not defined."
-    fi
-    _blockMark "$_prefix End"
-else
-    _printHelp
-fi
-
+main "$@"
 exit 0
-
-############################################################## end-template
