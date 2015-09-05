@@ -3,12 +3,11 @@
 set -e
 declare -r CURRENT_DIRECTORY=$(git rev-parse --show-toplevel)
 declare -r MODULE_NAME=$(basename $CURRENT_DIRECTORY)
+declare -r LOGFILE=$CURRENT_DIRECTORY/.lnkr.log
 declare -r INSTALL_SWITCH_SHORT='-i'
 declare -r INSTALL_SWITCH_LONG='--install'
 declare -r REMOVE_SWITCH_SHORT='-r'
 declare -r REMOVE_SWITCH_LONG='--remove'
-
-_backupLog=$CURRENT_DIRECTORY/.backup.log
 
 function info() {
     echo -e "[info] $@"
@@ -42,7 +41,7 @@ function link() {
             fail "Could not create backup."
         fi
         warn "mv -n  $(mv -vn $_linkname $_backupLocation)"
-        echo $_backupLocation >> $_backupLog
+        echo $_backupLocation >> $LOGFILE
     fi
 
     mkdir -p $(dirname $_linkname)
@@ -97,7 +96,7 @@ function _restoreEntry() {
         else
             info "mv -n $(mv -nv $_backupLocation $_originalLocation)"
             local _pattern=$(echo $_backupLocation | sed -r 's/(.*)(backup.*$)/\2/')
-            sed -i "/$_pattern/d" $_backupLog
+            sed -i "/$_pattern/d" $LOGFILE
         fi
    else
        fail "Backup location does not exist."
@@ -105,14 +104,14 @@ function _restoreEntry() {
 }
 
 function _defaultRestoreProcedure() {
-    if ! [ -e $_backupLog ]; then
-        touch $_backupLog
+    if ! [ -e $LOGFILE ]; then
+        touch $LOGFILE
     fi
     local _logContainedLines=false
     while read -r e; do
        _restoreEntry $e
        _logContainedLines=true
-    done < $_backupLog
+    done < $LOGFILE
     if ! $_logContainedLines; then
        info "Log file is empty. There are no backups to restore."
     fi
