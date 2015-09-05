@@ -77,10 +77,6 @@ info "Modify push-url of all submodules from github.com (Use SSH instead of HTTP
     '
 }
 
-function _blockMark() {
-    echo -e "------ \e[1;37m$@\e[0m"
-}
-
 function _restoreEntry() {
    requires sed
    local _backupLocation=$1
@@ -117,24 +113,28 @@ function _defaultRestoreProcedure() {
     fi
 }
 
+function print_divider() {
+    echo -e "------ \e[1;37m${REPO_NAME} $@\e[0m"
+}
+
 function remove() {
-  _blockMark "${REPO_NAME} Restore backups"
+  print_divider 'Restore backups'
   if declare -F RESTORE &> /dev/null; then
       RESTORE
   else
       _defaultRestoreProcedure
   fi
-  _blockMark "${REPO_NAME} End"
+  print_divider
 }
 
 function install() {
-  _blockMark "${REPO_NAME} Install configuration"
+  print_divider 'Install configuration'
   if declare -F install_hook &> /dev/null; then
       install_hook
   else
       fail "Install hook not defined."
   fi
-  _blockMark "${REPO_NAME} End"
+  print_divider
 }
 
 
