@@ -22,50 +22,38 @@ function fail() {
     exit 1
 }
 
-function requires() {
-   command -v $1 &> /dev/null || {
-     fail "The command ‘$1’ is required."
-   }
-}
+function lnk() {
+    local target=$1
+    local linkname=$2
 
-function link() {
-    requires date
-    local _target=$1
-    local _linkname=$2
-
-    if [ -e $_linkname ] && ! [ -L $_linkname ]; then
-        local _timestamp=$(date +"%Y-%m-%dT%T")
-        local _backupLocation="$_linkname.backup-$_timestamp"
-        warn "Object at $_linkname is not a symbolic link. Creating backup..."
-        if [ -e $_backupLocation ]; then
-            fail "Could not create backup."
+    if [[ -e $linkname ]] && ! [[ -L $linkname ]]; then
+        local timestamp=$(date +"%Y-%m-%dT%T")
+        local backup_location="${linkname}.backup-${timestamp}"
+        warn "Object at ${linkname} is not a symbolic link. Creating backup..."
+        if [[ -e $backup_location ]]; then
+            fail "Could not create backup"
         fi
-        warn "mv -n  $(mv -vn $_linkname $_backupLocation)"
-        echo $_backupLocation >> $LOGFILE
+        warn "mv -n  $(mv -vn $linkname $backup_location)"
+        echo "$backup_location" >> "$LOGFILE"
     fi
 
-    mkdir -p $(dirname $_linkname)
-    info "ln -sf $(ln -vsfT $_target $_linkname)"
+    mkdir -p $(dirname "$linkname")
+    info "ln -sf $(ln -vsfT $target $linkname)"
 }
 
-function setupSubmodules() {
-    initializeAndUpdateAllSubmodules
-    modifySubmodulesPushUrl
+function setup_submodules() {
+    init_and_update_submodules
+    modify_submodules_push_url
 }
 
-function initializeAndUpdateAllSubmodules() {
+function init_and_update_submodules() {
     info "Initialize and update all submodules"
-    cd $CURRENT_DIRECTORY
-    requires git
-    git submodule update --init
+    git -C "$CURRENT_DIRECTORY" submodule update --init
 }
 
-function modifySubmodulesPushUrl() {
+function modify_submodules_push_url() {
 info "Modify push-url of all submodules from github.com (Use SSH instead of HTTPS)"
-    cd $CURRENT_DIRECTORY
-    requires git
-    requires sed
-    git submodule foreach '
+    git -C "$CURRENT_DIRECTORY" submodule foreach '
         pattern="^.*https:\/\/(github.com)\/(.*\.git).*"
         orgURL=$(git remote -v show | grep origin | grep push)
         newURL=$(echo $orgURL | sed -r "/$pattern/{s/$pattern/git@\1:\2/;q0}; /$pattern/!{q1}")
@@ -77,38 +65,37 @@ info "Modify push-url of all submodules from github.com (Use SSH instead of HTTP
     '
 }
 
-function _restoreEntry() {
-   requires sed
-   local _backupLocation=$1
-   local _originalLocation=$(echo $_backupLocation | sed 's/\.backup.*$//')
+function restore_entry() {
+   local backup_location=$1
+   local original_location=$(echo $backup_location | sed 's/\.backup.*$//')
 
-   info "Recorded backup location is $_backupLocation"
-   if [ -e $_backupLocation ] && ! [ -L $_backupLocation ]; then
-        if [ -L $_originalLocation ]; then
-            rm $_originalLocation
+   info "Recorded backup location is ${backup_location}"
+   if [[ -e $backup_location ]] && ! [[ -L $backup_location ]]; then
+        if [[ -L $original_location ]]; then
+            rm $original_location
         fi
-        if [ -e $_originalLocation ]; then
-            fail "Could not move backup to $_originalLocation"
+        if [[ -e $original_location ]]; then
+            fail "Could not move backup to ${original_location}"
         else
-            info "mv -n $(mv -nv $_backupLocation $_originalLocation)"
-            local _pattern=$(echo $_backupLocation | sed -r 's/(.*)(backup.*$)/\2/')
-            sed -i "/$_pattern/d" $LOGFILE
+            info "mv -n $(mv -nv $backup_location $original_location)"
+            local pattern=$(echo $backup_location | sed -r 's/(.*)(backup.*$)/\2/')
+            sed -i "/${pattern}/d" $LOGFILE
         fi
    else
-       fail "Backup location does not exist."
+       fail "Backup location does not exist"
    fi
 }
 
-function _defaultRestoreProcedure() {
-    if ! [ -e $LOGFILE ]; then
-        touch $LOGFILE
-    fi
-    local _logContainedLines=false
+function default_remove_procedure() {
+    #if ! [[ -e $LOGFILE ]]; then
+        #touch $LOGFILE
+    #fi
+    local log_contained_lines=false
     while read -r e; do
-       _restoreEntry $e
-       _logContainedLines=true
+       restore_entry $e
+       log_contained_lines=true
     done < $LOGFILE
-    if ! $_logContainedLines; then
+    if ! $log_contained_lines; then
        info "Log file is empty. There are no backups to restore."
     fi
 }
@@ -118,21 +105,21 @@ function print_divider() {
 }
 
 function remove() {
-  print_divider 'Restore backups'
-  if declare -F RESTORE &> /dev/null; then
-      RESTORE
+  print_divider 'Remove'
+  if declare -F restore_hook &> /dev/null; then
+      restore_hook
   else
-      _defaultRestoreProcedure
+      default_remove_procedure
   fi
   print_divider
 }
 
 function install() {
-  print_divider 'Install configuration'
+  print_divider 'Install'
   if declare -F install_hook &> /dev/null; then
-      install_hook
+    install_hook
   else
-      fail "Install hook not defined."
+    fail "Function install_hook() is not defined."
   fi
   print_divider
 }
