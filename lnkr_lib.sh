@@ -27,8 +27,7 @@ function lnk() {
   local linkname=$2
 
   if [[ -e $linkname ]] && ! [[ -L $linkname ]]; then
-    local timestamp=$(date +"%Y-%m-%dT%T")
-    local backup_location="${linkname}.backup-${timestamp}"
+    local backup_location="${linkname}.backup-$(timestamp)"
     warn "Object at ${linkname} is not a symbolic link. Creating backup..."
     if [[ -e $backup_location ]]; then
       fail "Could not create backup"
@@ -104,6 +103,10 @@ function default_remove_procedure() {
 
 function print_divider() {
   echo -e "------ \e[1;37m${REPO_NAME} $@\e[0m"
+}
+
+function timestamp() {
+  echo "$(date --iso-8601=s)"
 }
 
 function remove() {
