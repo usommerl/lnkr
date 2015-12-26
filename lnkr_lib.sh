@@ -3,7 +3,7 @@
 set -e
 declare -r CURRENT_DIRECTORY=$(git rev-parse --show-toplevel)
 declare -r REPO_NAME=$(basename $CURRENT_DIRECTORY)
-declare -r LOGFILE=$CURRENT_DIRECTORY/.lnkr.log
+declare -r LOGFILE=$CURRENT_DIRECTORY/lnkr.log
 declare -r INSTALL_SWITCH_SHORT='-i'
 declare -r INSTALL_SWITCH_LONG='--install'
 declare -r REMOVE_SWITCH_SHORT='-r'
@@ -25,20 +25,19 @@ function fail() {
 function lnk() {
   local target=$1
   local linkname=$2
-
-  if [[ -e $linkname ]] && ! [[ -L $linkname ]]; then
+  if [[ -e $linkname ]]; then
     local backup_location="${linkname}.backup-$(timestamp)"
-    warn "Object at ${linkname} is not a symbolic link. Creating backup..."
+    warn "File ${linkname} exists. Creating backup..."
     if [[ -e $backup_location ]]; then
       fail "Could not create backup"
     fi
-    # Look for a different solution
     warn "mv -n  $(mv -vn $linkname $backup_location)"
-    echo "$backup_location" >> "$LOGFILE"
+		echo -e "$(timestamp_and_uid)BAK$(pad)$backup_location" >> "$LOGFILE"
   fi
 
   mkdir -p $(dirname "$linkname")
   info "ln -sf $(ln -vsfT $target $linkname)"
+	echo -e "$(timestamp_and_uid)LNK$(pad)$target$(pad)$linkname" >> "$LOGFILE"
 }
 
 function setup_submodules() {
@@ -107,6 +106,14 @@ function print_divider() {
 
 function timestamp() {
   echo "$(date --iso-8601=s)"
+}
+
+function pad() {
+	echo -e "\t\0"
+}
+
+function timestamp_and_uid() {
+	echo -e "$(timestamp)$(pad)$(id -u)$(pad)"
 }
 
 function remove() {
