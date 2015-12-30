@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-#
-# Script to manage the lifecycle of this lnkr module.
-# Run it without arguments for further information.
 
-#function install_hook() {
-#}
+# Template script to install configuration files.
+# Define method install_hook and use library methods lnk
+# and su_lnk to create symlinks. These methods will automatically
+# create backups if a file exists at the link location.
+
+# Example:
+function install_hook() {
+	lnk $CURRENT_DIRECTORY/file ~/file
+}
 
 #################################################################### bootstrap [
 function bootstrap() {
