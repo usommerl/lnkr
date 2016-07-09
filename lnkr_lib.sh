@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 set -e
-declare -r CURRENT_DIRECTORY=$(git rev-parse --show-toplevel)
-declare -r REPO_NAME=$(basename $CURRENT_DIRECTORY)
-declare -r LOGFILE=$CURRENT_DIRECTORY/lnkr.log
+declare -r REPO_NAME=$(basename $(git rev-parse --show-toplevel))
+declare -r LOGFILE=$SCRIPT_DIRECTORY/lnkr.log
 declare -r INSTALL_SWITCH_SHORT='-i'
 declare -r INSTALL_SWITCH_LONG='--install'
 declare -r REMOVE_SWITCH_SHORT='-r'
@@ -47,12 +46,12 @@ function setup_submodules() {
 
 function init_and_update_submodules() {
   info "Initialize and update all submodules"
-  git -C "$CURRENT_DIRECTORY" submodule update --init
+  git submodule update --init
 }
 
 function modify_submodules_push_url() {
   info 'Modify push-url of all submodules from github.com (Use SSH instead of HTTPS)'
-  git -C "$CURRENT_DIRECTORY" submodule foreach '
+  git submodule foreach '
   pattern="^.*https:\/\/(github.com)\/(.*\.git).*"
   orgURL=$(git remote -v show | grep origin | grep push)
   newURL=$(echo $orgURL | sed -r "/$pattern/{s/$pattern/git@\1:\2/;q0}; /$pattern/!{q1}")

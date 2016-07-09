@@ -5,23 +5,25 @@
 # and su_lnk to create symlinks. These methods will automatically
 # create backups if a file exists at the link location.
 
-# Example:
 function install_hook() {
-	lnk $CURRENT_DIRECTORY/file ~/file
+  echo 'Please define install_hook() function'
+  echo 'Example:'
+  echo '  lnk $CURRENT_DIRECTORY/file ~/file'
+  echo '  su_lnk $CURRENT_DIRECTORY/file /etc/file'
 }
 
-#################################################################### bootstrap [
+# Bootstrap code downloads and sources the lnkr library.
+# Do not alter the code below unless you know what you are doing.
+#################################################################################
+declare -r ORIGIN_DIRECTORY=$(pwd)
+declare -r SCRIPT_DIRECTORY=$(dirname $(readlink -f "$0"))
 function bootstrap() {
-  local lib_name=lnkr_lib.sh
-  local lib_path=$(readlink -e $(find . -name "${lib_name}" -printf '%d %p\n' |\
-                                 sort -n                                      |\
-                                 head -n 1                                    |\
-                                 cut -d ' ' -f 2))
-  command -v git &>/dev/null && {
-    git submodule --quiet update --init "$(dirname "${lib_path}")"
-    [ -e "${lib_path}" ] && source "${lib_path}" "$@"
-  }
+  cd $SCRIPT_DIRECTORY
+  local lib=lnkr_lib.sh
+  local lib_path=$SCRIPT_DIRECTORY/$lib
+  local url=https://raw.githubusercontent.com/usommerl/configuration-module-lib/v1/$lib
+  [ ! -e "$lib_path" ] && (curl -O $url || wget $url)
+  [ -e "$lib_path" ] && source "$lib_path" "$@"
   echo "Bootstrap failed. Aborting."; exit 1
 }
 bootstrap "$@"
-#################################################################### bootstrap ]
