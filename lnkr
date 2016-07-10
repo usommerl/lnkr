@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# Template script to install configuration files.
 # Define method install_hook and use library methods lnk
-# and su_lnk to create symlinks. These methods will automatically
-# create backups if a file exists at the link location.
+# and su_lnk to create symlinks to configuration files.
+# These methods will automatically create backups if a
+# file exists at the link location.
 
 function install_hook() {
   echo 'Please define install_hook() function'
@@ -12,10 +12,8 @@ function install_hook() {
   echo '  su_lnk $CURRENT_DIRECTORY/file /etc/file'
 }
 
-# Bootstrap code downloads and sources the lnkr library.
-# Do not alter the code below unless you know what you are doing.
+# Do not alter bootstrap code below unless you know what you are doing.
 #################################################################################
-declare -r ORIGIN_DIRECTORY=$(pwd)
 declare -r SCRIPT_DIRECTORY=$(dirname $(readlink -f "$0"))
 function bootstrap() {
   cd $SCRIPT_DIRECTORY

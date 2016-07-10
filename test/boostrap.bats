@@ -7,8 +7,8 @@ setup() {
   export repo_root=$(git rev-parse --show-toplevel)
   export testspace=$repo_root/test/testspace
   mkdir -p $testspace
-  cp $repo_root/lnkr.template $testspace
-  export lnkr=$testspace/lnkr.template
+  cp $repo_root/lnkr $testspace
+  export lnkr=$testspace/lnkr
 }
 
 teardown() {
