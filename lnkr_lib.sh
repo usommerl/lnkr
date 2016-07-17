@@ -8,20 +8,20 @@ declare -r INSTALL_SWITCH_LONG='--install'
 declare -r REMOVE_SWITCH_SHORT='-r'
 declare -r REMOVE_SWITCH_LONG='--remove'
 
-function info() {
+info() {
   echo -e "[info] $@"
 }
 
-function warn() {
+warn() {
   echo -e "\e[1;33m[warn]\e[0m $@"
 }
 
-function fail() {
+fail() {
   echo -e "\e[1;31m[fail]\e[0m $@ Aborting." >&2
   exit 1
 }
 
-function lnk() {
+lnk() {
   local target=$1
   local linkname=$2
   if [[ -e $linkname ]]; then
@@ -39,17 +39,17 @@ function lnk() {
 	echo -e "$(timestamp_and_uid)LNK$(pad)$target$(pad)$linkname" >> "$LOGFILE"
 }
 
-function setup_submodules() {
+setup_submodules() {
   init_and_update_submodules
   modify_submodules_push_url
 }
 
-function init_and_update_submodules() {
+init_and_update_submodules() {
   info "Initialize and update all submodules"
   git submodule update --init
 }
 
-function modify_submodules_push_url() {
+modify_submodules_push_url() {
   info 'Modify push-url of all submodules from github.com (Use SSH instead of HTTPS)'
   git submodule foreach '
   pattern="^.*https:\/\/(github.com)\/(.*\.git).*"
@@ -63,7 +63,7 @@ function modify_submodules_push_url() {
   '
 }
 
-function restore_entry() {
+restore_entry() {
   local backup_location=$1
   local original_location=$(echo $backup_location | sed 's/\.backup.*$//')
 
@@ -85,7 +85,7 @@ function restore_entry() {
   fi
 }
 
-function default_remove_procedure() {
+default_remove_procedure() {
   #if ! [[ -e $LOGFILE ]]; then
   #touch $LOGFILE
   #fi
@@ -99,23 +99,23 @@ function default_remove_procedure() {
   fi
 }
 
-function print_divider() {
+print_divider() {
   echo -e "------ \e[1;37m${REPO_NAME} $@\e[0m"
 }
 
-function timestamp() {
+timestamp() {
   echo "$(date --iso-8601=s)"
 }
 
-function pad() {
-	echo -e "\t\0"
+pad() {
+  echo -e "\t\0"
 }
 
-function timestamp_and_uid() {
-	echo -e "$(timestamp)$(pad)$(id -u)$(pad)"
+timestamp_and_uid() {
+  echo -e "$(timestamp)$(pad)$(id -u)$(pad)"
 }
 
-function remove() {
+remove() {
   print_divider 'Remove'
   if declare -F restore_hook &> /dev/null; then
       restore_hook
@@ -125,7 +125,7 @@ function remove() {
   print_divider
 }
 
-function install() {
+install() {
   print_divider 'Install'
   if declare -F install_hook &> /dev/null; then
     install_hook
@@ -136,7 +136,7 @@ function install() {
 }
 
 
-function print_help() {
+print_help() {
   local script_name=$(basename $0)
   local indent_option='  '
   local indent='      '
@@ -155,7 +155,7 @@ function print_help() {
   echo ""
 }
 
-function main() {
+main() {
   case "$1" in
     $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
       remove
