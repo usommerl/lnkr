@@ -29,7 +29,7 @@ teardown() {
 }
 
 @test "bootstrap should use curl or wget to download library" {
-  stub curl "bash: curl: command not found" 1
+  stub curl "bash: curl: command not found" 127
   run $lnkr
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "bash: curl: command not found" ]
@@ -37,8 +37,8 @@ teardown() {
 }
 
 @test "bootstrap should abort if it is not able to download library" {
-  stub curl "bash: curl: command not found" 1
-  stub wget "bash: wget: command not found" 1
+  stub curl "bash: curl: command not found" 127
+  stub wget "bash: wget: command not found" 127
   run $lnkr
   [ "$status" -eq 1 ]
   [ "${lines[2]}" = "Bootstrap failed. Aborting." ]

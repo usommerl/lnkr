@@ -13,7 +13,6 @@ teardown() {
   rm_testspace
 }
 
-
 @test 'main should print help if no argument is provided' {
   run main
   [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
