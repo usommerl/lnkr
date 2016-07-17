@@ -5,8 +5,8 @@ load stub
 
 setup() {
   make_testspace
-  cp $repo_root/lnkr $testspace
-  export lnkr=$testspace/lnkr
+  cp $REPO_ROOT/lnkr $TESTSPACE
+  export lnkr=$TESTSPACE/lnkr
 }
 
 teardown() {
@@ -18,11 +18,11 @@ teardown() {
 @test "bootstrap should dowload library if it does not exist" {
   run $lnkr --help
   [ "$status" -eq 0 ]
-  [ -e "$testspace/lnkr_lib.sh" ]
+  [ -e "$TESTSPACE/lnkr_lib.sh" ]
 }
 
 @test "bootstrap should not overwrite existing library" {
-  echo 'echo "Fake lnkr library"; exit 254' > $testspace/lnkr_lib.sh
+  echo 'echo "Fake lnkr library"; exit 254' > $TESTSPACE/lnkr_lib.sh
   run $lnkr --help
   [ "$output" = "Fake lnkr library" ]
   [ "$status" -eq 254 ]
@@ -33,7 +33,7 @@ teardown() {
   run $lnkr --help
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "bash: curl: command not found" ]
-  [ -e "$testspace/lnkr_lib.sh" ]
+  [ -e "$TESTSPACE/lnkr_lib.sh" ]
 }
 
 @test "bootstrap should abort if it is not able to download library" {
@@ -42,5 +42,5 @@ teardown() {
   run $lnkr --help
   [ "$status" -eq 1 ]
   [ "${lines[2]}" = "Bootstrap failed. Aborting." ]
-  [ ! -e "$testspace/lnkr_lib.sh" ]
+  [ ! -e "$TESTSPACE/lnkr_lib.sh" ]
 }

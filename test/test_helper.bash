@@ -1,3 +1,6 @@
+readonly REPO_ROOT=$(git rev-parse --show-toplevel)
+readonly TESTSPACE=$BATS_TEST_DIRNAME/testspace
+
 print_cmd_output() {
   echo >&2
   for line in ${lines[@]}; do
@@ -6,11 +9,9 @@ print_cmd_output() {
 }
 
 make_testspace() {
-  export repo_root=$(git rev-parse --show-toplevel)
-  export testspace=$repo_root/test/testspace
-  mkdir -p $testspace
+  mkdir -p $TESTSPACE
 }
 
 rm_testspace() {
-  [ -d "$testspace" ] && rm -rf "$testspace"
+  [ -d "$TESTSPACE" ] && rm -rf "$TESTSPACE"
 }

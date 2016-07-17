@@ -5,12 +5,11 @@ load test_helper
 setup() {
   make_testspace
   export LNKR_LIB_TEST=true
-  source $repo_root/lnkr_lib.sh
+  source $REPO_ROOT/lnkr_lib.sh
 }
 
 teardown() {
   print_cmd_output
-  rm_testspace
 }
 
 @test 'main should print help if no argument is provided' {
