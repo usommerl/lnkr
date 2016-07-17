@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
 set -e
-declare -r REPO_NAME=$(basename $(git rev-parse --show-toplevel))
-declare -r LOGFILE=$SCRIPT_DIRECTORY/lnkr.log
-declare -r INSTALL_SWITCH_SHORT='-i'
-declare -r INSTALL_SWITCH_LONG='--install'
-declare -r REMOVE_SWITCH_SHORT='-r'
-declare -r REMOVE_SWITCH_LONG='--remove'
+readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
+readonly LOGFILE=$SCRIPT_DIRECTORY/lnkr.log
+readonly INSTALL_SWITCH_SHORT='-i'
+readonly INSTALL_SWITCH_LONG='--install'
+readonly REMOVE_SWITCH_SHORT='-r'
+readonly REMOVE_SWITCH_LONG='--remove'
+readonly HELP_SWITCH_SHORT='-h'
+readonly HELP_SWITCH_LONG='--help'
 
 info() {
   echo -e "[info] $@"

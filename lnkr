@@ -14,7 +14,7 @@ function install_hook() {
 
 # Do not alter bootstrap code below unless you know what you are doing.
 #################################################################################
-declare -r SCRIPT_DIRECTORY=$(dirname $(readlink -f "$0"))
+readonly SCRIPT_DIRECTORY=$(dirname $(readlink -f "$0"))
 function bootstrap() {
   cd $SCRIPT_DIRECTORY
   local lib=lnkr_lib.sh
