@@ -165,11 +165,17 @@ main() {
     $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
       install
       ;;
+    $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
+      print_help
+      ;;
     *)
       print_help
+      exit 1
       ;;
   esac
 }
 
-main "$@"
-exit 0
+if [ -z "$LNKR_LIB_TEST" ]; then
+  main "$@"
+  exit 0
+fi
