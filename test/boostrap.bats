@@ -4,16 +4,14 @@ load test_helper
 load stub
 
 setup() {
-  export repo_root=$(git rev-parse --show-toplevel)
-  export testspace=$repo_root/test/testspace
-  mkdir -p $testspace
+  make_testspace
   cp $repo_root/lnkr $testspace
   export lnkr=$testspace/lnkr
 }
 
 teardown() {
-  [ -d "$testspace" ] && rm -rf "$testspace"
   print_cmd_output
+  rm_testspace
   rm_stubs
 }
 
