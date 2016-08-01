@@ -15,20 +15,20 @@ teardown() {
   rm_stubs
 }
 
-@test "bootstrap should dowload library if it does not exist" {
+@test 'bootstrap should dowload library if it does not exist' {
   run $lnkr --help
   [ "$status" -eq 0 ]
   [ -e "$TESTSPACE/lnkr_lib.sh" ]
 }
 
-@test "bootstrap should not overwrite existing library" {
+@test 'bootstrap should not overwrite existing library' {
   echo 'echo "Fake lnkr library"; exit 254' > $TESTSPACE/lnkr_lib.sh
   run $lnkr --help
   [ "$output" = "Fake lnkr library" ]
   [ "$status" -eq 254 ]
 }
 
-@test "bootstrap should use curl or wget to download library" {
+@test 'bootstrap should use curl or wget to download library' {
   stub curl "bash: curl: command not found" 127
   run $lnkr --help
   [ "$status" -eq 0 ]
@@ -36,7 +36,7 @@ teardown() {
   [ -e "$TESTSPACE/lnkr_lib.sh" ]
 }
 
-@test "bootstrap should abort if it is not able to download library" {
+@test 'bootstrap should abort if it is not able to download library' {
   stub curl "bash: curl: command not found" 127
   stub wget "bash: wget: command not found" 127
   run $lnkr --help
