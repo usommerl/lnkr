@@ -10,6 +10,7 @@ print_cmd_output() {
 
 make_testspace() {
   mkdir -p $TESTSPACE
+  cd $TESTSPACE
 }
 
 rm_testspace() {

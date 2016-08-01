@@ -15,13 +15,13 @@ function install_hook() {
 # Do not alter bootstrap code below unless you know what you are doing.
 #################################################################################
 readonly SCRIPT_DIRECTORY=$(dirname $(readlink -f "$0"))
-function bootstrap() {
+readonly LNKR_LIB=lnkr_lib.sh
+function __bootstrap() {
   cd $SCRIPT_DIRECTORY
-  local lib=lnkr_lib.sh
-  local lib_path=$SCRIPT_DIRECTORY/$lib
-  local url=https://raw.githubusercontent.com/usommerl/configuration-module-lib/v1/$lib
+  local lib_path=$SCRIPT_DIRECTORY/$LNKR_LIB
+  local url=https://raw.githubusercontent.com/usommerl/configuration-module-lib/v1/$LNKR_LIB
   [ ! -e "$lib_path" ] && (curl -O $url || wget $url)
   [ -e "$lib_path" ] && source "$lib_path" "$@"
   echo "Bootstrap failed. Aborting."; exit 1
 }
-bootstrap "$@"
+__bootstrap "$@"

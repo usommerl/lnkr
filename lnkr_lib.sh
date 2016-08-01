@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
 readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
 readonly LOGFILE=$SCRIPT_DIRECTORY/lnkr.log
 readonly INSTALL_SWITCH_SHORT='-i'
@@ -137,8 +136,12 @@ install() {
   print_divider
 }
 
+__add_to_gitignore() {
+  grep -E "$LNKR_LIB\$" .gitignore &> /dev/null
+  [ "$?" -ne 0 ] && echo "$LNKR_LIB" >> .gitignore
+}
 
-print_help() {
+__print_help() {
   local script_name=$(basename $0)
   local indent_option='  '
   local indent='      '
@@ -157,7 +160,8 @@ print_help() {
   echo ""
 }
 
-main() {
+__main() {
+  __add_to_gitignore
   case "$1" in
     $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
       remove
@@ -166,16 +170,16 @@ main() {
       install
       ;;
     $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
-      print_help
+      __print_help
       ;;
     *)
-      print_help
+      __print_help
       exit 1
       ;;
   esac
 }
 
 if [ -z "$LNKR_LIB_TEST" ]; then
-  main "$@"
+  __main "$@"
   exit 0
 fi
