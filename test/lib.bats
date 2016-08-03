@@ -4,13 +4,15 @@ load test_helper
 
 setup() {
   make_testspace
-  export LNKR_LIB_TEST=true
-  source $REPO_ROOT/lnkr_lib.sh
+  readonly LIB_TEST=true
+  readonly LIB_NAME=lnkr_lib.sh
+  readonly START_DIRECTORY=$TESTSPACE
+  source $REPO_ROOT/$LIB_NAME
 }
 
 teardown() {
+  print_output
   rm_testspace
-  print_cmd_output
 }
 
 @test '__main should print help if no argument is provided' {
@@ -31,18 +33,18 @@ teardown() {
   [ "$status" -eq 0 ]
 }
 
-@test '__main should add library to gitignore' {
+@test '__main should add library and log file to gitignore' {
   run __main
-  result=$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)
-  echo $result >&2
-  [ "$result" -eq 1 ]
+  [ -f "$TESTSPACE/.gitignore" ]
+  [ "$(cat $TESTSPACE/.gitignore | wc -l)" -eq 2 ]
+  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+  [ "$(grep 'lnkr.log' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
 }
 
 @test '__main should not add library multiple times to gitignore' {
   run __main
   run __main
-  run __main
-  result=$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)
-  echo $result >&2
-  [ "$result" -eq 1 ]
+  [ "$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)" -eq 2 ]
+  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+  [ "$(grep 'lnkr.log' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
 }

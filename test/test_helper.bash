@@ -1,7 +1,7 @@
 readonly REPO_ROOT=$(git rev-parse --show-toplevel)
 readonly TESTSPACE=$BATS_TEST_DIRNAME/testspace
 
-print_cmd_output() {
+print_output() {
   echo >&2
   for line in ${lines[@]}; do
     echo $line >&2

@@ -10,7 +10,7 @@ setup() {
 }
 
 teardown() {
-  print_cmd_output
+  print_output
   rm_testspace
   rm_stubs
 }

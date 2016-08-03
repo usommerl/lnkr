@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
-readonly LOGFILE=$START_DIRECTORY/lnkr.log
+readonly LOG_NAME='lnkr.log'
+readonly LOGFILE=$START_DIRECTORY/$LOG_NAME
 readonly INSTALL_SWITCH_SHORT='-i'
 readonly INSTALL_SWITCH_LONG='--install'
 readonly REMOVE_SWITCH_SHORT='-r'
@@ -137,8 +138,10 @@ install() {
 }
 
 __add_to_gitignore() {
-  grep -E "$LNKR_LIB\$" .gitignore &> /dev/null
-  [ "$?" -ne 0 ] && echo "$LNKR_LIB" >> .gitignore
+  for filename in "$LIB_NAME" "$LOG_NAME"; do
+    grep -E "$filename\$" .gitignore &> /dev/null
+    [ "$?" -ne 0 ] && echo "$filename" >> .gitignore
+  done
 }
 
 __print_help() {
@@ -179,7 +182,7 @@ __main() {
   esac
 }
 
-if [ -z "$LNKR_LIB_TEST" ]; then
+if [ -z "$LIB_TEST" ]; then
   __main "$@"
   exit 0
 fi
