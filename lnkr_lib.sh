@@ -182,7 +182,7 @@ __main() {
   esac
 }
 
-if [ -z "$LIB_TEST" ]; then
-  __main "$@"
-  exit 0
-fi
+[ -n "$LIB_TEST" ] && return
+
+__main "$@"
+exit 0
