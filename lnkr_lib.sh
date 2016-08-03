@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
-readonly LOGFILE=$SCRIPT_DIRECTORY/lnkr.log
+readonly LOGFILE=$START_DIRECTORY/lnkr.log
 readonly INSTALL_SWITCH_SHORT='-i'
 readonly INSTALL_SWITCH_LONG='--install'
 readonly REMOVE_SWITCH_SHORT='-r'
