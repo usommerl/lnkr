@@ -5,7 +5,8 @@ stub() {
     mkdir $BATS_TEST_DIRNAME/stub
   fi
   touch $BATS_TEST_DIRNAME/stub/$1
-  echo "echo $2; exit $3" > $BATS_TEST_DIRNAME/stub/$1
+  [ -z "$3" ] && local rc=0 || local rc="$3"
+  echo "echo $2; exit $rc" > $BATS_TEST_DIRNAME/stub/$1
   chmod +x $BATS_TEST_DIRNAME/stub/$1
 }
 
