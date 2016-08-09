@@ -74,3 +74,13 @@ teardown() {
   [ $(echo "${lines[1]}" | grep "Could not create backup" | wc -l) -eq 1 ]
   [ ! -L $linkpath ]
 }
+
+@test 'lnk should create parent directories if they do not exist' {
+  local linkname='link'
+  local parent_dir="$TESTSPACE/does_not_exist"
+  local linkpath="$parent_dir/$linkname"
+  [ ! -e "$parent_dir" ]
+  run lnk "$TESTSPACE/file" $linkpath
+  [ -e "$parent_dir" ]
+  [ -L $linkpath ]
+}
