@@ -26,12 +26,10 @@ fail() {
 lnk() {
   local target=$1
   local linkname=$2
-  if [[ -e $linkname ]]; then
+  if [ -e "$linkname" ]; then
     local backup_location="${linkname}.backup-$(timestamp)"
     warn "File ${linkname} exists. Creating backup..."
-    if [[ -e $backup_location ]]; then
-      fail "Could not create backup"
-    fi
+    [ -e "$backup_location" ] && fail "Could not create backup"
     warn "mv -n  $(mv -vn $linkname $backup_location)"
     echo -e "$(timestamp_and_uid)BAK$(pad)$backup_location" >> "$LOGFILE"
   fi
