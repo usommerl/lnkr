@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 load test_helper
+load stub
 
 setup() {
   make_testspace
@@ -12,6 +13,7 @@ setup() {
 
 teardown() {
   print_output
+  rm_stubs
   rm_testspace
 }
 
@@ -47,4 +49,28 @@ teardown() {
   [ "$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)" -eq 2 ]
   [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
   [ "$(grep 'lnkr.log' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+}
+
+@test 'lnk should create backup if file exists in target location' {
+  local timestamp='2016-08-09T2120:36+02:00'
+  local linkname='link'
+  local linkpath="$TESTSPACE/$linkname"
+  touch $linkpath
+  stub date $timestamp
+  run lnk "$TESTSPACE/file" $linkname
+  [ "$status" -eq 0 ]
+  [ "$(ls -l1 ${linkpath}.backup-$timestamp)" ]
+  [ -L $linkpath ]
+}
+@test 'lnk should fail if file with same name as backup file exists' {
+  local timestamp='2016-08-09T2120:36+02:00'
+  local linkname='link'
+  local linkpath="$TESTSPACE/$linkname"
+  touch $linkpath
+  touch $linkpath.backup-$timestamp
+  stub date $timestamp
+  run lnk "$TESTSPACE/file" $linkname
+  [ "$status" -eq 1 ]
+  [ $(echo "${lines[1]}" | grep "Could not create backup" | wc -l) -eq 1 ]
+  [ ! -L $linkpath ]
 }

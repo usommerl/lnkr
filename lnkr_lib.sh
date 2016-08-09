@@ -33,12 +33,12 @@ lnk() {
       fail "Could not create backup"
     fi
     warn "mv -n  $(mv -vn $linkname $backup_location)"
-		echo -e "$(timestamp_and_uid)BAK$(pad)$backup_location" >> "$LOGFILE"
+    echo -e "$(timestamp_and_uid)BAK$(pad)$backup_location" >> "$LOGFILE"
   fi
 
   mkdir -p $(dirname "$linkname")
   info "ln -sf $(ln -vsfT $target $linkname)"
-	echo -e "$(timestamp_and_uid)LNK$(pad)$target$(pad)$linkname" >> "$LOGFILE"
+  echo -e "$(timestamp_and_uid)LNK$(pad)$target$(pad)$linkname" >> "$LOGFILE"
 }
 
 setup_submodules() {
