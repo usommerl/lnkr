@@ -66,10 +66,10 @@ teardown() {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'
   local linkpath="$TESTSPACE/$linkname"
-  touch $linkpath
-  touch $linkpath.backup-$timestamp
+  local linktarget="$TESTSPACE/file"
+  touch "$linkpath" "$linktarget" "$linkpath.backup-$timestamp"
   stub date $timestamp
-  run lnk "$TESTSPACE/file" $linkname
+  run lnk $linktarget $linkname
   [ "$status" -eq 1 ]
   [ $(echo "${lines[1]}" | grep "Could not create backup" | wc -l) -eq 1 ]
   [ ! -L $linkpath ]
@@ -83,4 +83,13 @@ teardown() {
   run lnk "$TESTSPACE/file" $linkpath
   [ -e "$parent_dir" ]
   [ -L $linkpath ]
+}
+
+@test 'lnk should warn about dead links' {
+  local linkname='link'
+  local linkpath="$TESTSPACE/$linkname"
+  local linktarget="$TESTSPACE/file"
+  run lnk $linktarget $linkname
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[0]}" | grep "dead link" | wc -l) -eq 1 ]
 }

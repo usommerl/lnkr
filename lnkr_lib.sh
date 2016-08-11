@@ -24,19 +24,24 @@ fail() {
 }
 
 lnk() {
-  local target=$1
-  local linkname=$2
-  if [ -e "$linkname" ]; then
-    local backup_location="${linkname}.backup-$(timestamp)"
-    warn "File ${linkname} exists. Creating backup..."
-    [ -e "$backup_location" ] && fail "Could not create backup"
-    warn "mv -n  $(mv -vn $linkname $backup_location)"
-    echo -e "$(timestamp_and_uid)BAK$(pad)$backup_location" >> "$LOGFILE"
+  local link_target=$1
+  local link_location=$2
+  if [ ! -e "$link_target" ]; then
+    warn "Link target $link_target does not exist. You will create a dead link!"
   fi
+  [ -e "$link_location" ] && __create_backup "$link_location"
+  mkdir -p $(dirname "$link_location")
+  info "ln -sfT $(ln -vsfT $link_target $link_location)"
+  echo -e "$(timestamp_and_uid)LNK$(pad)$link_target$(pad)$link_location" >> "$LOGFILE"
+}
 
-  mkdir -p $(dirname "$linkname")
-  info "ln -sf $(ln -vsfT $target $linkname)"
-  echo -e "$(timestamp_and_uid)LNK$(pad)$target$(pad)$linkname" >> "$LOGFILE"
+__create_backup() {
+  local link_location=$1
+  local backup_location="${link_location}.backup-$(timestamp)"
+  warn "Link location is occupied. Creating backup of file ${link_location}"
+  [ -e "$backup_location" ] && fail "Could not create backup"
+  warn "mv -n  $(mv -vn $link_location $backup_location)"
+  echo -e "$(timestamp_and_uid)BAK$(pad)$backup_location" >> "$LOGFILE"
 }
 
 setup_submodules() {
