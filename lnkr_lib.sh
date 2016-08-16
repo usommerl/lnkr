@@ -120,7 +120,7 @@ timestamp_and_uid() {
   echo -e "$(timestamp)$(pad)$(id -u)$(pad)"
 }
 
-remove() {
+__remove() {
   print_divider 'Remove'
   if declare -F restore_hook &> /dev/null; then
       restore_hook
@@ -130,7 +130,7 @@ remove() {
   print_divider
 }
 
-install() {
+__install() {
   print_divider 'Install'
   if declare -F install_hook &> /dev/null; then
     install_hook
@@ -170,10 +170,10 @@ __main() {
   __add_to_gitignore
   case "$1" in
     $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
-      remove
+      __remove
       ;;
     $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
-      install
+      __install
       ;;
     $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
       __print_help
