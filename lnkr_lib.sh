@@ -10,16 +10,25 @@ readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
 
+__timestamp() {
+  echo "$(date --iso-8601=s)"
+}
+
+__logger_base() {
+  local log=$START_DIRECTORY/lnkr.log
+  printf "\e[0m$(__timestamp) $1\e[0m $2\n" | tee >(sed 's/\x1b\[[0-9;]*m//g' >> $log)
+}
+
 info() {
-  echo -e "[info] $@"
+  __logger_base '[info]' "$@"
 }
 
 warn() {
-  echo -e "\e[1;33m[warn]\e[0m $@"
+  __logger_base '\e[1;33m[warn]' "$@"
 }
 
 fail() {
-  echo -e "\e[1;31m[fail]\e[0m $@ Aborting." >&2
+  __logger_base '\e[1;31m[fail]' "$@"
   exit 1
 }
 
@@ -37,7 +46,7 @@ lnk() {
 
 __create_backup() {
   local link_location=$1
-  local backup_location="${link_location}.backup-$(timestamp)"
+  local backup_location="${link_location}.backup-$(__timestamp)"
   warn "Link location is occupied. Creating backup of file ${link_location}"
   [ -e "$backup_location" ] && fail "Could not create backup"
   warn "mv -n  $(mv -vn $link_location $backup_location)"
@@ -108,16 +117,13 @@ print_divider() {
   echo -e "------ \e[1;37m${REPO_NAME} $@\e[0m"
 }
 
-timestamp() {
-  echo "$(date --iso-8601=s)"
-}
 
 pad() {
   echo -e "\t\0"
 }
 
 timestamp_and_uid() {
-  echo -e "$(timestamp)$(pad)$(id -u)$(pad)"
+  echo -e "$(__timestamp)$(pad)$(id -u)$(pad)"
 }
 
 __remove() {

@@ -17,40 +17,6 @@ teardown() {
   rm_testspace
 }
 
-@test '__main should print help if no argument is provided' {
-  run __main
-  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
-  [ "$status" -eq 1 ]
-}
-
-@test '__main should print help if unkown argument is provided' {
-  run __main --wrong-argument
-  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
-  [ "$status" -eq 1 ]
-}
-
-@test '__main should print help when help switch is provided' {
-  run __main --help
-  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
-  [ "$status" -eq 0 ]
-}
-
-@test '__main should add library and log file to gitignore' {
-  run __main
-  [ -f "$TESTSPACE/.gitignore" ]
-  [ "$(cat $TESTSPACE/.gitignore | wc -l)" -eq 2 ]
-  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
-  [ "$(grep 'lnkr.log' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
-}
-
-@test '__main should not add library multiple times to gitignore' {
-  run __main
-  run __main
-  [ "$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)" -eq 2 ]
-  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
-  [ "$(grep 'lnkr.log' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
-}
-
 @test 'lnk should create backup if file exists in target location' {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'
@@ -92,4 +58,56 @@ teardown() {
   run lnk $linktarget $linkname
   [ "$status" -eq 0 ]
   [ $(echo "${lines[0]}" | grep "dead link" | wc -l) -eq 1 ]
+}
+
+@test 'fail should abort script with exit code 1' {
+  run fail 'ERROR'
+  [ "$status" -eq 1 ]
+}
+
+@test '__main should print help if no argument is provided' {
+  run __main
+  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
+  [ "$status" -eq 1 ]
+}
+
+@test '__main should print help if unkown argument is provided' {
+  run __main --wrong-argument
+  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
+  [ "$status" -eq 1 ]
+}
+
+@test '__main should print help when help switch is provided' {
+  run __main --help
+  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
+  [ "$status" -eq 0 ]
+}
+
+@test '__main should add library and log file to gitignore' {
+  run __main
+  [ -f "$TESTSPACE/.gitignore" ]
+  [ "$(cat $TESTSPACE/.gitignore | wc -l)" -eq 2 ]
+  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+  [ "$(grep 'lnkr.log' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+}
+
+@test '__main should not add library multiple times to gitignore' {
+  run __main
+  run __main
+  [ "$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)" -eq 2 ]
+  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+  [ "$(grep 'lnkr.log' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+}
+
+@test '__logger_base should print to file and STDOUT' {
+  run info 'line1'
+  [ $(echo "${lines[0]}" | grep 'info.*line1' | wc -l) -eq 1 ]
+  run warn 'line2'
+  [ $(echo "${lines[0]}" | grep 'warn.*line2' | wc -l) -eq 1 ]
+  run fail 'line3'
+  [ $(echo "${lines[0]}" | grep 'fail.*line3' | wc -l) -eq 1 ]
+  run cat $TESTSPACE/lnkr.log
+  [ $(echo "${lines[0]}" | grep 'info.*line1' | wc -l) -eq 1 ]
+  [ $(echo "${lines[1]}" | grep 'warn.*line2' | wc -l) -eq 1 ]
+  [ $(echo "${lines[2]}" | grep 'fail.*line3' | wc -l) -eq 1 ]
 }
