@@ -1,23 +1,16 @@
 #!/usr/bin/env bash
 
-readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
 readonly LOG_NAME='lnkr.log'
-readonly LOGFILE=$START_DIRECTORY/$LOG_NAME
+readonly JOURNAL_NAME='.lnkr.journal'
+readonly JOURNAL_FILE=$START_DIRECTORY/$JOURNAL_NAME
+readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
 readonly INSTALL_SWITCH_SHORT='-i'
 readonly INSTALL_SWITCH_LONG='--install'
 readonly REMOVE_SWITCH_SHORT='-r'
 readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
-
-__timestamp() {
-  echo "$(date --iso-8601=s)"
-}
-
-__logger_base() {
-  local log=$START_DIRECTORY/lnkr.log
-  printf "\e[0m$(__timestamp) $1\e[0m $2\n" | tee >(sed 's/\x1b\[[0-9;]*m//g' >> $log)
-}
+readonly SEP='\t\0'
 
 info() {
   __logger_base '[info]' "$@"
@@ -41,7 +34,7 @@ lnk() {
   [ -e "$link_location" ] && __create_backup "$link_location"
   mkdir -p $(dirname "$link_location")
   info "ln -sfT $(ln -vsfT $link_target $link_location)"
-  echo -e "$(timestamp_and_uid)LNK$(pad)$link_target$(pad)$link_location" >> "$LOGFILE"
+  __record_link "$link_target" "$link_location"
 }
 
 __create_backup() {
@@ -50,7 +43,7 @@ __create_backup() {
   warn "Link location is occupied. Creating backup of file ${link_location}"
   [ -e "$backup_location" ] && fail "Could not create backup"
   warn "mv -n  $(mv -vn $link_location $backup_location)"
-  echo -e "$(timestamp_and_uid)BAK$(pad)$backup_location" >> "$LOGFILE"
+  __record_backup "$backup_location"
 }
 
 setup_submodules() {
@@ -117,15 +110,6 @@ print_divider() {
   echo -e "------ \e[1;37m${REPO_NAME} $@\e[0m"
 }
 
-
-pad() {
-  echo -e "\t\0"
-}
-
-timestamp_and_uid() {
-  echo -e "$(__timestamp)$(pad)$(id -u)$(pad)"
-}
-
 __remove() {
   print_divider 'Remove'
   if declare -F restore_hook &> /dev/null; then
@@ -146,8 +130,32 @@ __install() {
   print_divider
 }
 
+__timestamp() {
+  echo "$(date --iso-8601=s)"
+}
+
+__record_backup() {
+  __journal_base "BAK$SEP$1"
+}
+
+__record_link() {
+  local link_target=$1
+  local link_location=$2
+  __journal_base "LNK$SEP$link_target$SEP$link_location"
+}
+
+__journal_base() {
+  printf "$(__timestamp)$SEP$(id -u)$SEP$1\n" >> $JOURNAL_FILE
+}
+
+__logger_base() {
+  local log=$START_DIRECTORY/$LOG_NAME
+  printf "\e[0m$(__timestamp) $1\e[0m $2\n" | \
+    tee >(sed 's/\x1b\[[0-9;]*m//g' >> $log)
+}
+
 __add_to_gitignore() {
-  for filename in "$LIB_NAME" "$LOG_NAME"; do
+  for filename in "$LIB_NAME" "$LOG_NAME" "$JOURNAL_NAME"; do
     grep -E "$filename\$" .gitignore &> /dev/null
     [ "$?" -ne 0 ] && echo "$filename" >> .gitignore
   done
