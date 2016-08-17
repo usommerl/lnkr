@@ -111,3 +111,18 @@ teardown() {
   [ $(echo "${lines[1]}" | grep 'warn.*line2' | wc -l) -eq 1 ]
   [ $(echo "${lines[2]}" | grep 'fail.*line3' | wc -l) -eq 1 ]
 }
+
+@test '__install should fail if install_hook is not defined' {
+  run __install
+  [ "$status" -eq 1 ]
+  [ $(echo "${lines[1]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
+}
+
+@test '__install should fail if install_hook is not defined' {
+  install_hook() {
+    printf 'install_hook\n'
+  }
+  run __install
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[1]}" | grep 'install_hook' | wc -l) -eq 1 ]
+}
