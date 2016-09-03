@@ -7,8 +7,6 @@ before_install:
 before_script:
   - pip install --user codecov && codecov
 script: bats --tap test
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
 notifications:
   email:
     on_success: never
