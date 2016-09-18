@@ -72,7 +72,7 @@ teardown() {
   [ $(echo "${lines[1]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
 }
 
-@test '__install should fail if install_hook is not defined' {
+@test '__install should succeed if install_hook is defined' {
   install_hook() {
     printf 'install_hook\n'
   }
