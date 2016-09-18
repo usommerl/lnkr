@@ -93,6 +93,12 @@ teardown() {
   [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
 }
 
+@test '__remove should warn if journal is empty' {
+  run __remove
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[@]}" | grep -i 'journal.*empty' | wc -l) -eq 1 ]
+}
+
 @test 'lnk should create backup if file exists in target location' {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'

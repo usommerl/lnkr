@@ -70,7 +70,7 @@ modify_submodules_push_url() {
   '
 }
 
-restore_entry() {
+__revert_entry() {
   local backup_location=$1
   local original_location=$(echo $backup_location | sed 's/\.backup.*$//')
 
@@ -92,18 +92,14 @@ restore_entry() {
   fi
 }
 
-__default_remove_procedure() {
-  #if ! [[ -e $LOGFILE ]]; then
-  #touch $LOGFILE
-  #fi
-  local log_contained_lines=false
-  while read -r e; do
-    restore_entry $e
-    log_contained_lines=true
-  done < $LOGFILE
-  if ! $log_contained_lines; then
-    info 'Log file is empty. There are no backups to restore.'
+__revert_journal_entries() {
+  if [ ! -s "$LOGFILE" ]; then
+    warn "Journal file is empty or does not exist. Nothing to remove!"
+    return
   fi
+  while read -r e; do
+    __revert_entry $e
+  done < <(tac "$LOGFILE")
 }
 
 print_divider() {
@@ -115,7 +111,7 @@ __remove() {
   if declare -F pre_remove_hook &> /dev/null; then
       pre_remove_hook
   fi
-  #__default_remove_procedure
+  __revert_journal_entries
   if declare -F post_remove_hook &> /dev/null; then
       post_remove_hook
   fi
