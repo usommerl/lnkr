@@ -92,7 +92,7 @@ restore_entry() {
   fi
 }
 
-default_remove_procedure() {
+__default_remove_procedure() {
   #if ! [[ -e $LOGFILE ]]; then
   #touch $LOGFILE
   #fi
@@ -112,10 +112,12 @@ print_divider() {
 
 __remove() {
   print_divider 'Remove'
-  if declare -F restore_hook &> /dev/null; then
-      restore_hook
-  else
-      default_remove_procedure
+  if declare -F pre_remove_hook &> /dev/null; then
+      pre_remove_hook
+  fi
+  #__default_remove_procedure
+  if declare -F post_remove_hook &> /dev/null; then
+      post_remove_hook
   fi
   print_divider
 }

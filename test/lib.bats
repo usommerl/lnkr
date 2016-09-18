@@ -69,7 +69,7 @@ teardown() {
 @test '__install should fail if install_hook is not defined' {
   run __install
   [ "$status" -eq 1 ]
-  [ $(echo "${lines[1]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
+  [ $(echo "${lines[@]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
 }
 
 @test '__install should succeed if install_hook is defined' {
@@ -78,7 +78,19 @@ teardown() {
   }
   run __install
   [ "$status" -eq 0 ]
-  [ $(echo "${lines[1]}" | grep 'install_hook' | wc -l) -eq 1 ]
+  [ $(echo "${lines[@]}" | grep 'install_hook' | wc -l) -eq 1 ]
+}
+
+@test '__remove should call pre and post hooks' {
+  pre_remove_hook() {
+    printf 'pre_remove\n'
+  }
+  post_remove_hook() {
+    printf 'post_remove\n'
+  }
+  run __remove
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
 }
 
 @test 'lnk should create backup if file exists in target location' {
