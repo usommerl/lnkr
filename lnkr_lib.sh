@@ -145,7 +145,8 @@ __record_link() {
 }
 
 __journal_base() {
-  printf "$(__timestamp)$SEP$(id -u)$SEP$1\n" >> $JOURNAL_FILE
+  printf "%s$SEP%s$SEP" "$(__timestamp)" "$(id -u)" >> $JOURNAL_FILE
+  printf "$1\n" >> $JOURNAL_FILE
 }
 
 __logger_base() {

@@ -124,16 +124,17 @@ teardown() {
   [ $(echo "${lines[0]}" | grep "dead link" | wc -l) -eq 1 ]
 }
 
-@test 'lnk should record link and backup' {
+@test 'lnk should record link and backup in journal' {
   local ts='2016-08-09T21:20:36+02:00'
   local linkname='link'
+  local id=$(id -u)
   touch "$TESTSPACE/$linkname"
   stub date $ts
   run lnk "$TESTSPACE/file" $linkname
-  run cat $TESTSPACE/.lnkr.journal
+  run cat $TESTSPACE/.lnkr.journal; 
   [ "${#lines[@]}" -eq 2 ]
-  [ $(echo "${lines[0]}" | grep "BAK.*link.backup-$ts" | wc -l) -eq 1 ]
-  [ $(echo "${lines[1]}" | grep "LNK.*file.*link" | wc -l) -eq 1 ]
+  [ $(echo "${lines[0]}" | grep "$ts.*$id.*BAK.*link.backup-$ts" | wc -l) -eq 1 ]
+  [ $(echo "${lines[1]}" | grep "$ts.*$id.*LNK.*file.*link" | wc -l) -eq 1 ]
 }
 
 @test 'fail should abort script with exit code 1' {
