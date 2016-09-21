@@ -66,39 +66,6 @@ teardown() {
   [ $(echo "${lines[2]}" | grep 'fail.*line3' | wc -l) -eq 1 ]
 }
 
-@test 'install should fail if function install() is not defined' {
-  run __main --install
-  [ "$status" -eq 1 ]
-  [ $(echo "${lines[@]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
-}
-
-@test 'install should succeed if function install() is defined' {
-  install() {
-    printf 'fake install function\n'
-  }
-  run __main --install
-  [ "$status" -eq 0 ]
-  [ $(echo "${lines[@]}" | grep 'fake install' | wc -l) -eq 1 ]
-}
-
-@test 'remove should call pre and post hooks' {
-  pre_remove_hook() {
-    printf 'pre_remove\n'
-  }
-  post_remove_hook() {
-    printf 'post_remove\n'
-  }
-  run __main --remove
-  [ "$status" -eq 0 ]
-  [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
-}
-
-@test 'remove should warn if journal is empty' {
-  run __main --remove
-  [ "$status" -eq 0 ]
-  [ $(echo "${lines[@]}" | grep -i 'journal.*empty' | wc -l) -eq 1 ]
-}
-
 @test 'lnk should create backup if file exists in target location' {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'
@@ -158,4 +125,37 @@ teardown() {
 @test 'fail should abort script with exit code 1' {
   run fail 'ERROR'
   [ "$status" -eq 1 ]
+}
+
+@test '--install should fail if function install() is not defined' {
+  run __main --install
+  [ "$status" -eq 1 ]
+  [ $(echo "${lines[@]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
+}
+
+@test '--install should succeed if function install() is defined' {
+  install() {
+    printf 'fake install function\n'
+  }
+  run __main --install
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[@]}" | grep 'fake install' | wc -l) -eq 1 ]
+}
+
+@test '--remove should call pre and post hooks' {
+  pre_remove_hook() {
+    printf 'pre_remove\n'
+  }
+  post_remove_hook() {
+    printf 'post_remove\n'
+  }
+  run __main --remove
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
+}
+
+@test '--remove should warn if journal is empty' {
+  run __main --remove
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[@]}" | grep -i 'journal.*empty' | wc -l) -eq 1 ]
 }

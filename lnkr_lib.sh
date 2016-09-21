@@ -93,21 +93,24 @@ __revert_entry() {
 }
 
 __revert_journal_entries() {
-  if [ ! -s "$LOGFILE" ]; then
+  if [ ! -s "$JOURNAL_FILE" ]; then
     warn "Journal file is empty or does not exist. Nothing to remove!"
     return
   fi
   while read -r e; do
     __revert_entry $e
-  done < <(tac "$LOGFILE")
+  done < <(tac "$JOURNAL_FILE")
 }
 
-print_divider() {
-  echo -e "------ \e[1;37m${REPO_NAME} $@\e[0m"
+__print_divider() {
+  [ ! -z "$1" ] && printf '\n'
+  printf '\e[1;37m─%.0s' {1..32}
+  [ ! -z "$1" ] && printf ' %s: %s\e[0m' "$1" "$REPO_NAME"
+  printf '\n'
 }
 
 __remove() {
-  print_divider 'Remove'
+  __print_divider 'REMOVE'
   if declare -F pre_remove_hook &> /dev/null; then
       pre_remove_hook
   fi
@@ -115,17 +118,17 @@ __remove() {
   if declare -F post_remove_hook &> /dev/null; then
       post_remove_hook
   fi
-  print_divider
+  __print_divider
 }
 
 __install() {
-  print_divider 'Install'
+  __print_divider 'INSTALL'
   if declare -F install &> /dev/null; then
     install
   else
     fail 'Function install() is not defined'
   fi
-  print_divider
+  __print_divider
 }
 
 __timestamp() {
