@@ -67,7 +67,7 @@ teardown() {
 }
 
 @test '__install should fail if install_hook is not defined' {
-  run __install
+  run __main --install
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
 }
@@ -76,7 +76,7 @@ teardown() {
   install_hook() {
     printf 'install_hook\n'
   }
-  run __install
+  run __main --install
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep 'install_hook' | wc -l) -eq 1 ]
 }
@@ -88,13 +88,13 @@ teardown() {
   post_remove_hook() {
     printf 'post_remove\n'
   }
-  run __remove
+  run __main --remove
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
 }
 
 @test '__remove should warn if journal is empty' {
-  run __remove
+  run __main --remove
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep -i 'journal.*empty' | wc -l) -eq 1 ]
 }
