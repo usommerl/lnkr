@@ -120,10 +120,10 @@ __remove() {
 
 __install() {
   print_divider 'Install'
-  if declare -F install_hook &> /dev/null; then
-    install_hook
+  if declare -F install &> /dev/null; then
+    install
   else
-    fail 'Function install_hook() is not defined'
+    fail 'Function install() is not defined'
   fi
   print_divider
 }

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# Define method install_hook and use library methods lnk
+# Define method install and use library methods lnk
 # and su_lnk to create symlinks to configuration files.
 # These methods will automatically create backups if a
 # file exists at the link location.
 
-function install_hook() {
-  echo 'Please define install_hook() function'
+function install() {
+  echo 'Please define install() function'
   echo 'Example:'
   echo '  lnk $CURRENT_DIRECTORY/file ~/file'
   echo '  su_lnk $CURRENT_DIRECTORY/file /etc/file'

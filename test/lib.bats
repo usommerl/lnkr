@@ -66,22 +66,22 @@ teardown() {
   [ $(echo "${lines[2]}" | grep 'fail.*line3' | wc -l) -eq 1 ]
 }
 
-@test '__install should fail if install_hook is not defined' {
+@test 'install should fail if function install() is not defined' {
   run __main --install
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
 }
 
-@test '__install should succeed if install_hook is defined' {
-  install_hook() {
-    printf 'install_hook\n'
+@test 'install should succeed if function install() is defined' {
+  install() {
+    printf 'fake install function\n'
   }
   run __main --install
   [ "$status" -eq 0 ]
-  [ $(echo "${lines[@]}" | grep 'install_hook' | wc -l) -eq 1 ]
+  [ $(echo "${lines[@]}" | grep 'fake install' | wc -l) -eq 1 ]
 }
 
-@test '__remove should call pre and post hooks' {
+@test 'remove should call pre and post hooks' {
   pre_remove_hook() {
     printf 'pre_remove\n'
   }
@@ -93,7 +93,7 @@ teardown() {
   [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
 }
 
-@test '__remove should warn if journal is empty' {
+@test 'remove should warn if journal is empty' {
   run __main --remove
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep -i 'journal.*empty' | wc -l) -eq 1 ]
