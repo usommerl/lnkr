@@ -102,15 +102,22 @@ __revert_journal_entries() {
   done < <(tac "$JOURNAL_FILE")
 }
 
-__print_divider() {
-  [ ! -z "$1" ] && printf '\n'
-  printf '\e[1;37m─%.0s' {1..32}
-  [ ! -z "$1" ] && printf ' %s: %s\e[0m' "$1" "$REPO_NAME"
-  printf '\n'
+__signify_base() {
+  info "$1 $2 $REPO_NAME"
+}
+
+__signify_begin() {
+  __signify_base "Start" "$1"
+}
+
+__signify_end() {
+  __signify_base "End" "$1"
+  printf "\n" | __output_writer
 }
 
 __remove() {
-  __print_divider 'REMOVE'
+  local operation='remove'
+  __signify_begin $operation
   if declare -F pre_remove_hook &> /dev/null; then
       pre_remove_hook
   fi
@@ -118,17 +125,18 @@ __remove() {
   if declare -F post_remove_hook &> /dev/null; then
       post_remove_hook
   fi
-  __print_divider
+  __signify_end $operation
 }
 
 __install() {
-  __print_divider 'INSTALL'
+  local operation='install'
+  __signify_begin $operation
   if declare -F install &> /dev/null; then
     install
   else
     fail 'Function install() is not defined'
   fi
-  __print_divider
+  __signify_end $operation
 }
 
 __timestamp() {
@@ -151,9 +159,12 @@ __journal_base() {
 }
 
 __logger_base() {
+  printf "\e[0m$(__timestamp) $1\e[0m $2\n" | __output_writer
+}
+
+__output_writer() {
   local log=$START_DIRECTORY/$LOG_NAME
-  printf "\e[0m$(__timestamp) $1\e[0m $2\n" | \
-    tee >(sed 's/\x1b\[[0-9;]*m//g' >> $log)
+  tee >(sed 's/\x1b\[[0-9;]*m//g' >> $log)
 }
 
 __add_to_gitignore() {
