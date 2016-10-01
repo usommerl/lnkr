@@ -112,7 +112,7 @@ teardown() {
 @test 'lnk should record link and backup in journal' {
   local ts='2016-08-09T21:20:36+02:00'
   local linkname='link'
-  local id=$(id -u)
+  local id=$(id -un)
   touch "$TESTSPACE/$linkname"
   stub date $ts
   run lnk "$TESTSPACE/file" $linkname
