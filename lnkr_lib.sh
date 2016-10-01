@@ -102,22 +102,31 @@ __revert_journal_entries() {
   done < <(tac "$JOURNAL_FILE")
 }
 
-__signify_base() {
+__log_operation() {
   info "$1 $2 $REPO_NAME"
 }
 
-__signify_begin() {
-  __signify_base "Start" "$1"
+__log_begin() {
+  __log_operation "Start" "$1"
 }
 
-__signify_end() {
-  __signify_base "End" "$1"
+__log_end() {
+  __log_operation "End" "$1"
   printf "\n" | __output_writer
 }
 
+__operation() {
+  local callback="__$1"
+  __log_begin $1
+  if declare -F "$callback" &> /dev/null; then
+    $callback
+  else
+    fail "Function $callback is not defined"
+  fi
+  __log_end $1
+}
+
 __remove() {
-  local operation='remove'
-  __signify_begin $operation
   if declare -F pre_remove_hook &> /dev/null; then
       pre_remove_hook
   fi
@@ -125,18 +134,14 @@ __remove() {
   if declare -F post_remove_hook &> /dev/null; then
       post_remove_hook
   fi
-  __signify_end $operation
 }
 
 __install() {
-  local operation='install'
-  __signify_begin $operation
   if declare -F install &> /dev/null; then
     install
   else
     fail 'Function install() is not defined'
   fi
-  __signify_end $operation
 }
 
 __timestamp() {
@@ -197,10 +202,10 @@ __main() {
   __add_to_gitignore
   case "$1" in
     $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
-      __remove
+      __operation 'remove'
       ;;
     $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
-      __install
+      __operation 'install'
       ;;
     $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
       __print_help
