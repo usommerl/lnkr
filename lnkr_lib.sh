@@ -4,13 +4,14 @@ readonly LOG_NAME='lnkr.log'
 readonly JOURNAL_NAME='.lnkr.journal'
 readonly JOURNAL_FILE=$START_DIRECTORY/$JOURNAL_NAME
 readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
+readonly ACTION_LINK='LNK'
+readonly ACTION_BACKUP='BAK'
 readonly INSTALL_SWITCH_SHORT='-i'
 readonly INSTALL_SWITCH_LONG='--install'
 readonly REMOVE_SWITCH_SHORT='-r'
 readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
-readonly SEP='\t\0'
 
 info() {
   __logger_base '[info]' "$@"
@@ -70,36 +71,59 @@ modify_submodules_push_url() {
   '
 }
 
-__revert_entry() {
-  local backup_location=$1
-  local original_location=$(echo $backup_location | sed 's/\.backup.*$//')
+__revert_action() {
+  local user="$(printf "$1" | cut -d $'\t' -f 2)"
+  local action="$(printf "$1" | cut -d $'\t' -f 3)"
+  local args="$(printf "$1" | cut -d $'\t' -f 4-)"
+  [ "$user" == "$(id -un)" ] && local sudo="sudo -u $user "
+  case "$action" in
+    "$ACTION_LINK")
+      __remove_link "$sudo" "$args"
+      ;;
+    "$ACTION_BACKUP")
+      __restore_bakup "$sudo" "$args"
+      ;;
+  esac
+}
 
-  info "Recorded backup location is ${backup_location}"
-  if [[ -e $backup_location ]] && ! [[ -L $backup_location ]]; then
-    if [[ -L $original_location ]]; then
-      rm $original_location
-    fi
-    if [[ -e $original_location ]]; then
-      fail "Could not move backup to ${original_location}"
-    else
-      # Look for a different solution
-      info "mv -n $(mv -nv $backup_location $original_location)"
-      local pattern=$(echo $backup_location | sed -r 's/(.*)(backup.*$)/\2/')
-      sed -i "/${pattern}/d" "$LOGFILE"
-    fi
+__remove_link() {
+  local link_target="$(printf "$2" | cut -d $'\t' -f 1)"
+  local link_location="$(printf "$2" | cut -d $'\t' -f 2)"
+  if [ ! -L "$link_location" ]; then
+    warn "Abort link removal: '$link_locaction' is not a symlink"
   else
-    fail 'Backup location does not exist'
+    eval "${1}rm $link_location"
+    info "Remove link: '$link_location'"
   fi
 }
 
-__revert_journal_entries() {
+__restore_bakup() {
+  local backup_location="$(printf "$2" | cut -d $'\t' -f 1)"
+  local original_location="$(printf "$backup_location" | sed 's/\.backup.*$//')"
+  if [ -e "$original_location" ]; then
+    warn "Abort restore backup: '$original_location' is occupied"
+  elif [ ! -e "$backup_location" ]; then
+    warn "Abort restore backup: '$backup_location' does not exist"
+  else
+    info "Restore backup: $(eval "${1}mv -nv $backup_location $original_location")"
+  fi
+}
+
+__remove_journal_entry() {
+  local pattern="^$(printf "$1" | cut -d $'\t' -f 1)"
+  sed -i "/$pattern/d" "$JOURNAL_FILE"
+}
+
+__revert_recorded_actions() {
   if [ ! -s "$JOURNAL_FILE" ]; then
     warn "Journal file is empty or does not exist. Nothing to remove!"
     return
   fi
-  while read -r e; do
-    __revert_entry $e
+  while read -r line; do
+  __revert_action "$line"
+  __remove_journal_entry "$line"
   done < <(tac "$JOURNAL_FILE")
+  unset line
 }
 
 __log_operation() {
@@ -130,7 +154,7 @@ __remove() {
   if declare -F pre_remove_hook &> /dev/null; then
       pre_remove_hook
   fi
-  __revert_journal_entries
+  __revert_recorded_actions
   if declare -F post_remove_hook &> /dev/null; then
       post_remove_hook
   fi
@@ -149,17 +173,18 @@ __timestamp() {
 }
 
 __record_backup() {
-  __journal_base "BAK$SEP$1"
+  __journal_base "$ACTION_BACKUP\t$1"
 }
 
 __record_link() {
   local link_target=$1
   local link_location=$2
-  __journal_base "LNK$SEP$link_target$SEP$link_location"
+  __journal_base "$ACTION_LINK\t$link_target\t$link_location"
 }
 
 __journal_base() {
-  printf "%s$SEP%s$SEP" "$(__timestamp)" "$(id -un)" >> $JOURNAL_FILE
+  local sha="$(printf "$(__timestamp)$(id -un)$1" | sha1sum | cut -d " " -f 1)"
+  printf "%s\t%s\t" "$sha" "$(id -un)" >> $JOURNAL_FILE
   printf "$1\n" >> $JOURNAL_FILE
 }
 

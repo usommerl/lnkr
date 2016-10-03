@@ -118,8 +118,8 @@ teardown() {
   run lnk "$TESTSPACE/file" $linkname
   run cat $TESTSPACE/.lnkr.journal; 
   [ "${#lines[@]}" -eq 2 ]
-  [ $(echo "${lines[0]}" | grep "$ts.*$id.*BAK.*link.backup-$ts" | wc -l) -eq 1 ]
-  [ $(echo "${lines[1]}" | grep "$ts.*$id.*LNK.*file.*link" | wc -l) -eq 1 ]
+  [ $(echo "${lines[0]}" | grep "$id.*BAK.*link.backup-$ts" | wc -l) -eq 1 ]
+  [ $(echo "${lines[1]}" | grep "$id.*LNK.*file.*link" | wc -l) -eq 1 ]
 }
 
 @test 'fail should abort script with exit code 1' {
@@ -159,3 +159,16 @@ teardown() {
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep -i 'journal.*empty' | wc -l) -eq 1 ]
 }
+
+@test '--remove should revert journal entries' {
+  local linkname='link'
+  printf 'file.orig\n' > "$TESTSPACE/$linkname"
+  printf 'file.linked\n' > "$TESTSPACE/file"
+  run lnk "$TESTSPACE/file" $linkname
+  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 2 ]
+  run __main --remove
+  [ "$status" -eq 0 ]
+  [ $(grep 'file.orig' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
+  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 0 ]
+}
+
