@@ -157,7 +157,7 @@ teardown() {
 @test '--remove should warn if journal is empty' {
   run __main --remove
   [ "$status" -eq 0 ]
-  [ $(echo "${lines[@]}" | grep -i 'journal.*empty' | wc -l) -eq 1 ]
+  [ $(echo "${lines[@]}" | grep -i 'journal.*no entries' | wc -l) -eq 1 ]
 }
 
 @test '--remove should revert journal entries' {
@@ -181,6 +181,6 @@ teardown() {
   run __main --remove
   [ "$status" -eq 0 ]
   [ $(grep 'file.new' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
-  [ $(grep 'KAK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+  [ $(grep 'BAK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
 }
 
