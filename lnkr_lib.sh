@@ -90,10 +90,9 @@ __remove_link() {
   local link_target="$(printf "$2" | cut -d $'\t' -f 1)"
   local link_location="$(printf "$2" | cut -d $'\t' -f 2)"
   if [ ! -L "$link_location" ]; then
-    warn "Abort link removal: '$link_locaction' is not a symlink"
+    warn "Abort link removal: '$link_location' is not a symlink"
   else
-    eval "${1}rm $link_location"
-    info "Remove link: '$link_location'"
+    eval "${1}rm $link_location" && info "Remove link: '$link_location'"
   fi
 }
 
@@ -101,6 +100,7 @@ __restore_bakup() {
   local backup_location="$(printf "$2" | cut -d $'\t' -f 1)"
   local original_location="$(printf "$backup_location" | sed 's/\.backup.*$//')"
   if [ -e "$original_location" ]; then
+    remove_journal_entry='false'
     warn "Abort restore backup: '$original_location' is occupied"
   elif [ ! -e "$backup_location" ]; then
     warn "Abort restore backup: '$backup_location' does not exist"
@@ -116,14 +116,14 @@ __remove_journal_entry() {
 
 __revert_recorded_actions() {
   if [ ! -s "$JOURNAL_FILE" ]; then
-    warn "Journal file is empty or does not exist. Nothing to remove!"
-    return
+    warn "Abort remove: Journal contains no entries" && return
   fi
   while read -r line; do
-  __revert_action "$line"
-  __remove_journal_entry "$line"
+    remove_journal_entry='true'
+    __revert_action "$line"
+    [ "$remove_journal_entry" == 'true' ] && __remove_journal_entry "$line"
   done < <(tac "$JOURNAL_FILE")
-  unset line
+  unset line keep_journal_entry
 }
 
 __log_operation() {

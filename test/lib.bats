@@ -172,3 +172,15 @@ teardown() {
   [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 0 ]
 }
 
+@test '--remove should not remove new file at recorded link location' {
+  local linkname='link'
+  printf 'file.orig\n' > "$TESTSPACE/$linkname"
+  printf 'file.linked\n' > "$TESTSPACE/file"
+  run lnk "$TESTSPACE/file" $linkname
+  rm "$TESTSPACE/$linkname" && printf 'file.new\n' > "$TESTSPACE/$linkname"
+  run __main --remove
+  [ "$status" -eq 0 ]
+  [ $(grep 'file.new' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
+  [ $(grep 'KAK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+}
+
