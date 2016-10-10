@@ -92,7 +92,9 @@ __remove_link() {
   if [ ! -L "$link_location" ]; then
     warn "Abort link removal: '$link_location' is not a symlink"
   else
-    eval "${1}rm $link_location" && info "Remove link: '$link_location'"
+    eval "${1}rm $link_location" &&
+      info "Removed link: '$link_location'" ||
+        remove_journal_entry='false'
   fi
 }
 
@@ -100,12 +102,14 @@ __restore_bakup() {
   local backup_location="$(__extract_field "$2" "1")"
   local original_location="$(printf "$backup_location" | sed 's/\.backup.*$//')"
   if [ -e "$original_location" ]; then
-    remove_journal_entry='false'
     warn "Abort restore backup: '$original_location' is occupied"
+    remove_journal_entry='false'
   elif [ ! -e "$backup_location" ]; then
     warn "Abort restore backup: '$backup_location' does not exist"
   else
-    info "Restore backup: $(eval "${1}mv -nv $backup_location $original_location")"
+    eval "${1}mv -n $backup_location $original_location" &&
+      info "Restored backup: '$backup_location' -> '$original_location'" ||
+        remove_journal_entry='false'
   fi
 }
 
@@ -127,7 +131,7 @@ __revert_recorded_actions() {
     __revert_action "$line"
     [ "$remove_journal_entry" == 'true' ] && __remove_journal_entry "$line"
   done < <(tac "$JOURNAL_FILE")
-  unset line keep_journal_entry
+  unset line remove_journal_entry
 }
 
 __log_operation() {
