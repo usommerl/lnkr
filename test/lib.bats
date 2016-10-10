@@ -184,3 +184,16 @@ teardown() {
   [ $(grep 'BAK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
 }
 
+@test '--remove should not fail if backup was removed' {
+  local linkname='link'
+  printf 'file.orig\n' > "$TESTSPACE/$linkname"
+  printf 'file.linked\n' > "$TESTSPACE/file"
+  run lnk "$TESTSPACE/file" $linkname
+  rm -v $TESTSPACE/$linkname.backup-*
+  run __main --remove
+  [ "$status" -eq 0 ]
+  [ ! -f "$TESTSPACE/$linkname" ]
+  [ $(echo "${lines[@]}" | grep -i 'backup.*does not exist' | wc -l) -eq 1 ]
+  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 0 ]
+}
+
