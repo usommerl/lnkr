@@ -72,9 +72,9 @@ modify_submodules_push_url() {
 }
 
 __revert_action() {
-  local user="$(printf "$1" | cut -d $'\t' -f 2)"
-  local action="$(printf "$1" | cut -d $'\t' -f 3)"
-  local args="$(printf "$1" | cut -d $'\t' -f 4-)"
+  local user="$(__extract_field "$1" "1")"
+  local action="$(__extract_field "$1" "3")"
+  local args="$(__extract_field "$1" "4-")"
   [ "$user" == "$(id -un)" ] && local sudo="sudo -u $user "
   case "$action" in
     "$ACTION_LINK")
@@ -87,8 +87,8 @@ __revert_action() {
 }
 
 __remove_link() {
-  local link_target="$(printf "$2" | cut -d $'\t' -f 1)"
-  local link_location="$(printf "$2" | cut -d $'\t' -f 2)"
+  local link_target="$(__extract_field "$2" "1")"
+  local link_location="$(__extract_field "$2" "2")"
   if [ ! -L "$link_location" ]; then
     warn "Abort link removal: '$link_location' is not a symlink"
   else
@@ -97,7 +97,7 @@ __remove_link() {
 }
 
 __restore_bakup() {
-  local backup_location="$(printf "$2" | cut -d $'\t' -f 1)"
+  local backup_location="$(__extract_field "$2" "1")"
   local original_location="$(printf "$backup_location" | sed 's/\.backup.*$//')"
   if [ -e "$original_location" ]; then
     remove_journal_entry='false'
@@ -110,8 +110,12 @@ __restore_bakup() {
 }
 
 __remove_journal_entry() {
-  local pattern="^$(printf "$1" | cut -d $'\t' -f 1)"
+  local pattern="^$(__extract_field "$1" "1")"
   sed -i "/$pattern/d" "$JOURNAL_FILE"
+}
+
+__extract_field() {
+  printf "$1" | cut -d $'\t' -f "$2"
 }
 
 __revert_recorded_actions() {
