@@ -66,6 +66,12 @@ teardown() {
   [ $(echo "${lines[2]}" | grep 'fail.*line3' | wc -l) -eq 1 ]
 }
 
+@test '__operation should fail if callback is not defined' {
+  run __operation "test"
+  [ "$status" -eq 1 ]
+  [ $(echo "${lines[@]}" | grep 'fail.*__test.*not defined' | wc -l) -eq 1 ]
+}
+
 @test 'lnk should create backup if file exists in target location' {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'
