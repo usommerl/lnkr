@@ -90,10 +90,10 @@ __remove_link() {
   local link_target="$(__extract_field "$2" "1")"
   local link_location="$(__extract_field "$2" "2")"
   if [ ! -L "$link_location" ]; then
-    warn "Abort link removal: '$link_location' is not a symlink"
+    warn "Could not delete link: '$link_location' is not a symlink"
   else
     eval "${1}rm $link_location" &&
-      info "Removed link: '$link_location'" ||
+      info "Deleted link: '$link_location'" ||
         remove_journal_entry='false'
   fi
 }
@@ -102,10 +102,10 @@ __restore_bakup() {
   local backup_location="$(__extract_field "$2" "1")"
   local original_location="$(printf "$backup_location" | sed 's/\.backup.*$//')"
   if [ -e "$original_location" ]; then
-    warn "Abort restore backup: '$original_location' is occupied"
+    warn "Could not restore backup: Path '$original_location' is occupied"
     remove_journal_entry='false'
   elif [ ! -e "$backup_location" ]; then
-    warn "Abort restore backup: '$backup_location' does not exist"
+    warn "Could not restore backup: '$backup_location' does not exist"
   else
     eval "${1}mv -n $backup_location $original_location" &&
       info "Restored backup: '$backup_location' -> '$original_location'" ||
@@ -134,28 +134,16 @@ __revert_recorded_actions() {
   unset line remove_journal_entry
 }
 
-__log_operation() {
-  info "$1 $2 $REPO_NAME"
-}
-
-__log_begin() {
-  __log_operation "Start" "$1"
-}
-
-__log_end() {
-  __log_operation "End" "$1"
-  printf "\n" | __output_writer
-}
-
 __operation() {
-  local callback="__$1"
-  __log_begin $1
+  local callback="__$(echo $1 | tr '[:upper:]' '[:lower:]')"
+  info "$1 repository '$REPO_NAME'"
   if declare -F "$callback" &> /dev/null; then
     $callback
   else
     fail "Function $callback is not defined"
   fi
-  __log_end $1
+  info "-"
+  printf "\n" | __output_writer
 }
 
 __remove() {
@@ -235,10 +223,10 @@ __main() {
   __add_to_gitignore
   case "$1" in
     $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
-      __operation 'remove'
+      __operation 'Remove'
       ;;
     $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
-      __operation 'install'
+      __operation 'Install'
       ;;
     $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
       __print_help
