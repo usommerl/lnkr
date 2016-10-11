@@ -203,3 +203,30 @@ teardown() {
   [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 0 ]
 }
 
+@test '--remove should not delete journal entry if link removal fails' {
+  local linkname='link'
+  printf 'file.linked\n' > "$TESTSPACE/file"
+  run lnk "$TESTSPACE/file" $linkname
+  stub rm "Unkown rm error" "1"
+  run __main --remove
+  [ "$status" -eq 0 ]
+  [ -f "$TESTSPACE/$linkname" ]
+  [ $(echo "${lines[@]}" | grep -i 'Unkown rm error' | wc -l) -eq 1 ]
+  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+  [ $(grep 'LNK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+}
+
+@test '--remove should not delete journal entry if backup recreation fails' {
+  local linkname='link'
+  printf 'file.orig\n' > "$TESTSPACE/$linkname"
+  printf 'file.linked\n' > "$TESTSPACE/file"
+  run lnk "$TESTSPACE/file" $linkname
+  stub mv "Unkown mv error" "1"
+  run __main --remove
+  [ "$status" -eq 0 ]
+  [ ! -f "$TESTSPACE/$linkname" ]
+  [ $(echo "${lines[@]}" | grep -i 'Unkown mv error' | wc -l) -eq 1 ]
+  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+  [ $(grep 'BAK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+}
+
