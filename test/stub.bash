@@ -11,5 +11,5 @@ stub() {
 }
 
 rm_stubs() {
-  rm -rf $BATS_TEST_DIRNAME/stub
+  /usr/bin/rm -rf $BATS_TEST_DIRNAME/stub
 }
