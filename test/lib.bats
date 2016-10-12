@@ -32,7 +32,7 @@ teardown() {
 @test '__main should print help when help switch is provided' {
   run __main --help
   [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
-  [ "$status" -eq 1 ]
+  [ "$status" -eq 0 ]
 }
 
 @test '__main should add library, log and journal to gitignore' {
@@ -92,7 +92,7 @@ teardown() {
   stub date $timestamp
   run lnk $linktarget $linkname
   [ "$status" -eq 1 ]
-  [ $(echo "${lines[1]}" | grep "Could not create backup" | wc -l) -eq 1 ]
+  [ $(echo "${lines[@]}" | grep "Could not create backup" | wc -l) -eq 1 ]
   [ ! -L $linkpath ]
 }
 
@@ -146,6 +146,18 @@ teardown() {
   run __main --install
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep 'fake install' | wc -l) -eq 1 ]
+}
+
+@test '--install should fail if journal is not empty' {
+  install() {
+    lnk "$TESTSPACE/file" 'link'
+  }
+  touch "$TESTSPACE/file"
+  run __main --install
+  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -gt 0 ]
+  run __main --install
+  [ "$status" -eq 1 ]
+  [ $(echo "${lines[@]}" | grep -i 'journal.*not empty' | wc -l) -eq 1 ]
 }
 
 @test '--remove should call pre and post hooks' {

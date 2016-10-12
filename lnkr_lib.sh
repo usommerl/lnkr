@@ -34,8 +34,9 @@ lnk() {
   fi
   [ -e "$link_location" ] && __create_backup "$link_location"
   mkdir -p $(dirname "$link_location")
-  info "ln -sfT $(ln -vsfT $link_target $link_location)"
-  __record_link "$link_target" "$link_location"
+  ln -sfT $link_target $link_location &&
+    info "Create link: $link_location -> $link_target" &&
+      __record_link "$link_target" "$link_location"
 }
 
 setup_submodules() {
@@ -83,13 +84,13 @@ __main() {
 
 __operation() {
   local callback="__$(echo $1 | tr '[:upper:]' '[:lower:]')"
-  info "$1 repository '$REPO_NAME'"
+  info "$1 repository $REPO_NAME"
   if declare -F "$callback" &> /dev/null; then
     $callback
   else
     fail "Function $callback is not defined"
   fi
-  info '-'
+  info "$1 finished"
   printf "\n" | __output_writer
 }
 
@@ -104,7 +105,9 @@ __remove() {
 }
 
 __install() {
-  if declare -F install &> /dev/null; then
+  if [ -s "$JOURNAL_FILE" ]; then
+    fail "Journal is not empty. Repository $REPO_NAME already installed?"
+  elif declare -F install &> /dev/null; then
     install
   else
     fail 'Function install() is not defined'
@@ -114,10 +117,9 @@ __install() {
 __create_backup() {
   local link_location=$1
   local backup_location="${link_location}.backup-$(__timestamp)"
-  warn "Link location is occupied. Creating backup of file ${link_location}"
-  [ -e "$backup_location" ] && fail "Could not create backup"
-  warn "mv -n  $(mv -vn $link_location $backup_location)"
-  __record_backup "$backup_location"
+  [ ! -e "$backup_location" ] && mv -n $link_location $backup_location &&
+    info "Create backup: $link_location -> $backup_location" &&
+      __record_backup "$backup_location" || fail "Could not create backup"
 }
 
 __revert_recorded_actions() {
