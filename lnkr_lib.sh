@@ -38,15 +38,6 @@ lnk() {
   __record_link "$link_target" "$link_location"
 }
 
-__create_backup() {
-  local link_location=$1
-  local backup_location="${link_location}.backup-$(__timestamp)"
-  warn "Link location is occupied. Creating backup of file ${link_location}"
-  [ -e "$backup_location" ] && fail "Could not create backup"
-  warn "mv -n  $(mv -vn $link_location $backup_location)"
-  __record_backup "$backup_location"
-}
-
 setup_submodules() {
   init_and_update_submodules
   modify_submodules_push_url
@@ -69,6 +60,76 @@ modify_submodules_push_url() {
     $($command)
   fi
   '
+}
+
+__main() {
+  __add_to_gitignore
+  case "$1" in
+    $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
+      __operation 'Remove'
+      ;;
+    $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
+      __operation 'Install'
+      ;;
+    $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
+      __print_help
+      ;;
+    *)
+      __print_help
+      exit 1
+      ;;
+  esac
+}
+
+__operation() {
+  local callback="__$(echo $1 | tr '[:upper:]' '[:lower:]')"
+  info "$1 repository '$REPO_NAME'"
+  if declare -F "$callback" &> /dev/null; then
+    $callback
+  else
+    fail "Function $callback is not defined"
+  fi
+  info '-'
+  printf "\n" | __output_writer
+}
+
+__remove() {
+  if declare -F pre_remove_hook &> /dev/null; then
+      pre_remove_hook
+  fi
+  __revert_recorded_actions
+  if declare -F post_remove_hook &> /dev/null; then
+      post_remove_hook
+  fi
+}
+
+__install() {
+  if declare -F install &> /dev/null; then
+    install
+  else
+    fail 'Function install() is not defined'
+  fi
+}
+
+__create_backup() {
+  local link_location=$1
+  local backup_location="${link_location}.backup-$(__timestamp)"
+  warn "Link location is occupied. Creating backup of file ${link_location}"
+  [ -e "$backup_location" ] && fail "Could not create backup"
+  warn "mv -n  $(mv -vn $link_location $backup_location)"
+  __record_backup "$backup_location"
+}
+
+__revert_recorded_actions() {
+  if [ ! -s "$JOURNAL_FILE" ]; then
+    warn "Abort remove: Journal contains no entries" && return
+  fi
+  while read -r line; do
+    remove_journal_entry='true'
+    __revert_action "$line"
+    [ "$remove_journal_entry" == 'true' ] && __remove_journal_entry "$line"
+  done < <(tac "$JOURNAL_FILE")
+  unset line remove_journal_entry
 }
 
 __revert_action() {
@@ -120,48 +181,6 @@ __remove_journal_entry() {
 
 __extract_field() {
   printf "$1" | cut -d $'\t' -f "$2"
-}
-
-__revert_recorded_actions() {
-  if [ ! -s "$JOURNAL_FILE" ]; then
-    warn "Abort remove: Journal contains no entries" && return
-  fi
-  while read -r line; do
-    remove_journal_entry='true'
-    __revert_action "$line"
-    [ "$remove_journal_entry" == 'true' ] && __remove_journal_entry "$line"
-  done < <(tac "$JOURNAL_FILE")
-  unset line remove_journal_entry
-}
-
-__operation() {
-  local callback="__$(echo $1 | tr '[:upper:]' '[:lower:]')"
-  info "$1 repository '$REPO_NAME'"
-  if declare -F "$callback" &> /dev/null; then
-    $callback
-  else
-    fail "Function $callback is not defined"
-  fi
-  info "-"
-  printf "\n" | __output_writer
-}
-
-__remove() {
-  if declare -F pre_remove_hook &> /dev/null; then
-      pre_remove_hook
-  fi
-  __revert_recorded_actions
-  if declare -F post_remove_hook &> /dev/null; then
-      post_remove_hook
-  fi
-}
-
-__install() {
-  if declare -F install &> /dev/null; then
-    install
-  else
-    fail 'Function install() is not defined'
-  fi
 }
 
 __timestamp() {
@@ -217,25 +236,6 @@ __print_help() {
   echo -e "${indent} Removes created links and restores all backups that where"
   echo -e "${indent} made during a previous install."
   echo ""
-}
-
-__main() {
-  __add_to_gitignore
-  case "$1" in
-    $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
-      __operation 'Remove'
-      ;;
-    $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
-      __operation 'Install'
-      ;;
-    $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
-      __print_help
-      ;;
-    *)
-      __print_help
-      exit 1
-      ;;
-  esac
 }
 
 [ -n "$LIB_TEST" ] && return
