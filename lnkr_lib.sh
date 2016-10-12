@@ -221,21 +221,21 @@ __add_to_gitignore() {
 
 __print_help() {
   local script_name=$(basename $0)
-  local indent_option='  '
-  local indent='      '
-  echo ""
-  echo -e "SYNOPSIS: ${script_name} [OPTION]\n"
-  echo -e "${indent_option} ${INSTALL_SWITCH_SHORT}, ${INSTALL_SWITCH_LONG}\n"
-  echo -e "${indent} Executes the install procedure defined in install_hook."
-  echo -e "${indent} Symbolic links that are created with lnk and su_lnk won't"
-  echo -e "${indent} overwrite existing files. These functions create backups"
-  echo -e "${indent} that will be restored automatically if you run this script"
-  echo -e "${indent} with the ${REMOVE_SWITCH_LONG} option."
-  echo ""
-  echo -e "${indent_option} ${REMOVE_SWITCH_SHORT}, ${REMOVE_SWITCH_LONG}\n"
-  echo -e "${indent} Removes created links and restores all backups that where"
-  echo -e "${indent} made during a previous install."
-  echo ""
+  local indent1='  %s\n\n'
+  local indent2='      %s\n'
+  printf '\n'
+  printf "SYNOPSIS: ${script_name} [OPTION]\n\n"
+  printf "$indent1" "${INSTALL_SWITCH_SHORT}, ${INSTALL_SWITCH_LONG}"
+  printf "$indent2" "Executes the install procedure defined in install()."
+  printf "$indent2" "Symbolic links that are created with lnk and su_lnk won't"
+  printf "$indent2" "overwrite existing files. These functions create backups"
+  printf "$indent2" "that will be restored automatically if you run this script"
+  printf "$indent2" "with the ${REMOVE_SWITCH_LONG} option."
+  printf '\n'
+  printf "$indent1" "${REMOVE_SWITCH_SHORT}, ${REMOVE_SWITCH_LONG}"
+  printf "$indent2" "Removes links and restores all backups that where"
+  printf "$indent2" "made during a previous install."
+  printf '\n'
 }
 
 [ -n "$LIB_TEST" ] && return

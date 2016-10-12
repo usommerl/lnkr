@@ -32,7 +32,7 @@ teardown() {
 @test '__main should print help when help switch is provided' {
   run __main --help
   [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
-  [ "$status" -eq 0 ]
+  [ "$status" -eq 1 ]
 }
 
 @test '__main should add library, log and journal to gitignore' {
