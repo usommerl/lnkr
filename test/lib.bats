@@ -72,56 +72,56 @@ teardown() {
   [ $(echo "${lines[@]}" | grep 'fail.*__test.*not defined' | wc -l) -eq 1 ]
 }
 
-@test 'lnk should create backup if file exists in target location' {
+@test 'link should create backup if file exists in target location' {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'
   local linkpath="$TESTSPACE/$linkname"
   touch $linkpath
   stub date $timestamp
-  run lnk "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" $linkname
   [ "$status" -eq 0 ]
   [ "$(ls -l1 ${linkpath}.backup-$timestamp)" ]
   [ -L $linkpath ]
 }
-@test 'lnk should fail if file with same name as backup file exists' {
+@test 'link should fail if file with same name as backup file exists' {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'
   local linkpath="$TESTSPACE/$linkname"
   local linktarget="$TESTSPACE/file"
   touch "$linkpath" "$linktarget" "$linkpath.backup-$timestamp"
   stub date $timestamp
-  run lnk $linktarget $linkname
+  run link $linktarget $linkname
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep "Could not create backup" | wc -l) -eq 1 ]
   [ ! -L $linkpath ]
 }
 
-@test 'lnk should create parent directories if they do not exist' {
+@test 'link should create parent directories if they do not exist' {
   local linkname='link'
   local parent_dir="$TESTSPACE/does_not_exist"
   local linkpath="$parent_dir/$linkname"
   [ ! -e "$parent_dir" ]
-  run lnk "$TESTSPACE/file" $linkpath
+  run link "$TESTSPACE/file" $linkpath
   [ -e "$parent_dir" ]
   [ -L $linkpath ]
 }
 
-@test 'lnk should warn about dead links' {
+@test 'link should warn about dead links' {
   local linkname='link'
   local linkpath="$TESTSPACE/$linkname"
   local linktarget="$TESTSPACE/file"
-  run lnk $linktarget $linkname
+  run link $linktarget $linkname
   [ "$status" -eq 0 ]
   [ $(echo "${lines[0]}" | grep "dead link" | wc -l) -eq 1 ]
 }
 
-@test 'lnk should record link and backup in journal' {
+@test 'link should record link and backup in journal' {
   local ts='2016-08-09T21:20:36+02:00'
   local linkname='link'
   local id=$(id -un)
   touch "$TESTSPACE/$linkname"
   stub date $ts
-  run lnk "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" $linkname
   run cat $TESTSPACE/.lnkr.journal; 
   [ "${#lines[@]}" -eq 2 ]
   [ $(echo "${lines[0]}" | grep "$id.*BAK.*link.backup-$ts" | wc -l) -eq 1 ]
@@ -150,7 +150,7 @@ teardown() {
 
 @test '--install should fail if journal is not empty' {
   install() {
-    lnk "$TESTSPACE/file" 'link'
+    link "$TESTSPACE/file" 'link'
   }
   touch "$TESTSPACE/file"
   run __main --install
@@ -182,7 +182,7 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run lnk "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" $linkname
   [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 2 ]
   run __main --remove
   [ "$status" -eq 0 ]
@@ -194,7 +194,7 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run lnk "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" $linkname
   rm "$TESTSPACE/$linkname" && printf 'file.new\n' > "$TESTSPACE/$linkname"
   run __main --remove
   [ "$status" -eq 0 ]
@@ -206,7 +206,7 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run lnk "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" $linkname
   rm -v $TESTSPACE/$linkname.backup-*
   run __main --remove
   [ "$status" -eq 0 ]
@@ -218,7 +218,7 @@ teardown() {
 @test '--remove should not delete journal entry if link removal fails' {
   local linkname='link'
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run lnk "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" $linkname
   stub rm "Unkown rm error" "1"
   run __main --remove
   [ "$status" -eq 0 ]
@@ -232,7 +232,7 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run lnk "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" $linkname
   stub mv "Unkown mv error" "1"
   run __main --remove
   [ "$status" -eq 0 ]

@@ -26,7 +26,7 @@ fail() {
   exit 1
 }
 
-lnk() {
+link() {
   local link_target=$1
   local link_location=$2
   if [ ! -e "$link_target" ]; then
