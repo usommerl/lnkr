@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-readonly LOG_NAME='lnkr.log'
 readonly JOURNAL_NAME='.lnkr.journal'
 readonly JOURNAL_FILE=$START_DIRECTORY/$JOURNAL_NAME
 readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
@@ -12,17 +11,18 @@ readonly REMOVE_SWITCH_SHORT='-r'
 readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
+readonly LOG_TO_SYSLOG=$(command -v logger)
 
 info() {
-  __logger_base '[info]' "$@"
+  __logger_base 'info' "$@"
 }
 
 warn() {
-  __logger_base '\e[1;33m[warn]' "$@"
+  __logger_base 'warn' "$@"
 }
 
 fail() {
-  __logger_base '\e[1;31m[fail]' "$@"
+  __logger_base 'fail' "$@"
   exit 1
 }
 
@@ -91,7 +91,7 @@ __operation() {
     fail "Function $callback is not defined"
   fi
   info "$1 finished"
-  printf "\n" | __output_writer
+  printf "\n"
 }
 
 __remove() {
@@ -206,16 +206,29 @@ __journal_base() {
 }
 
 __logger_base() {
-  printf "\e[0m$(__timestamp) $1\e[0m $2\n" | __output_writer
+  local level=$1
+  local color=$(__log_level_to_term_color $level)
+  local priority=$([ "$level" == 'fail' ] && printf 'err' || printf "$level")
+  printf "${color}[$level]\e[0m $2\n"
+  [ "$LOG_TO_SYSLOG" ] && logger -t $(basename $0) -p $priority "$2"
 }
 
-__output_writer() {
-  local log=$START_DIRECTORY/$LOG_NAME
-  tee >(sed 's/\x1b\[[0-9;]*m//g' >> $log)
+__log_level_to_term_color() {
+  case "$1" in
+    'warn')
+      printf '\e[1;97m'
+      ;;
+    'fail')
+      printf '\e[1;31m'
+      ;;
+    *)
+      printf '\e[0m'
+      ;;
+  esac
 }
 
 __add_to_gitignore() {
-  for filename in "$LIB_NAME" "$LOG_NAME" "$JOURNAL_NAME"; do
+  for filename in "$LIB_NAME" "$JOURNAL_NAME"; do
     grep -E "$filename\$" .gitignore &> /dev/null
     [ "$?" -ne 0 ] && echo "$filename" >> .gitignore
   done
