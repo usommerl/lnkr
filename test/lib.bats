@@ -128,6 +128,14 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
+@test 'setup_submodules should initialize submodules and modify push url' {
+  git clone https://github.com/usommerl/configuration-bash.git "$TESTSPACE"
+  run setup_submodules
+  cd $TESTSPACE/shell-commons
+  [ "$(ls -1 . | wc -l)" -gt 0 ]
+  [ "$(git remote -vv show | grep -e 'git@github.com.*(push)' | wc -l)" -eq 1 ]
+}
+
 @test '--install should fail if function install() is not defined' {
   run __main --install
   [ "$status" -eq 1 ]

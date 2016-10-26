@@ -40,17 +40,12 @@ link() {
 }
 
 setup_submodules() {
-  init_and_update_submodules
-  modify_submodules_push_url
-}
-
-init_and_update_submodules() {
-  info "Initialize and update all submodules"
+  info "Setup submodules"
   git submodule update --init
+  __modify_submodules_push_url
 }
 
-modify_submodules_push_url() {
-  info 'Modify push-url of all submodules from github.com (Use SSH instead of HTTPS)'
+__modify_submodules_push_url() {
   git submodule foreach '
   pattern="^.*https:\/\/(github.com)\/(.*\.git).*"
   orgURL=$(git remote -v show | grep origin | grep push)
