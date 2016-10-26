@@ -77,6 +77,7 @@ teardown() {
   [ "$(ls -l1 ${linkpath}.backup-$timestamp)" ]
   [ -L $linkpath ]
 }
+
 @test 'link should fail if file with same name as backup file exists' {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'

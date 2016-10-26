@@ -207,13 +207,13 @@ __journal_base() {
 
 __logger_base() {
   local level=$1
-  local color=$(__log_level_to_term_color $level)
+  local color=$(__to_term_color $level)
   local priority=$([ "$level" == 'fail' ] && printf 'err' || printf "$level")
   printf "${color}[$level]\e[0m $2\n"
   [ "$LOG_TO_SYSLOG" ] && logger -t $(basename $0) -p $priority "$2"
 }
 
-__log_level_to_term_color() {
+__to_term_color() {
   case "$1" in
     'warn')
       printf '\e[1;97m'
