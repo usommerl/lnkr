@@ -46,16 +46,16 @@ setup_submodules() {
 }
 
 __modify_submodules_push_url() {
-  git submodule foreach '
-  pattern="^.*https:\/\/(github.com)\/(.*\.git).*"
-  orgURL=$(git remote -v show | grep origin | grep push)
-  newURL=$(echo $orgURL | sed -r "/$pattern/{s/$pattern/git@\1:\2/;q0}; /$pattern/!{q1}")
-  if [ "$?" -eq 0 ]; then
-    command="git remote set-url --push origin $newURL"
-    echo "$command"
-    $($command)
-  fi
-  '
+  local modify_push_url='
+    pattern="^.*https:\/\/(github.com)\/(.*\.git).*"
+    orgURL=$(git remote -v show | grep origin | grep push)
+    newURL=$(echo $orgURL | sed -r "/$pattern/{s/$pattern/git@\1:\2/;q0}; /$pattern/!{q1}")
+    if [ "$?" -eq 0 ]; then
+      command="git remote set-url --push origin $newURL"
+      echo "$command"
+      $($command)
+    fi'
+  git submodule foreach "$modify_push_url"
 }
 
 __main() {
