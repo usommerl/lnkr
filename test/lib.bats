@@ -136,6 +136,14 @@ teardown() {
   [ "$(git remote -vv show | grep -e 'git@github.com.*(push)' | wc -l)" -eq 1 ]
 }
 
+@test 'setup_submodules should not modify push url if explicitly specified ' {
+  git clone https://github.com/usommerl/configuration-bash.git "$TESTSPACE"
+  run setup_submodules 'KEEP_PUSH_URL'
+  cd $TESTSPACE/shell-commons
+  [ "$(ls -1 . | wc -l)" -gt 0 ]
+  [ "$(git remote -vv show | grep -e 'https://github.com.*(push)' | wc -l)" -eq 1 ]
+}
+
 @test '--install should fail if function install() is not defined' {
   run __main --install
   [ "$status" -eq 1 ]
