@@ -15,7 +15,7 @@ teardown() {
   rm_stubs
 }
 
-@test '__bootstrap should dowload library if it does not exist' {
+@test '__bootstrap should download library if it does not exist' {
   run $lnkr --help
   [ "$status" -eq 0 ]
   [ -e "$TESTSPACE/lnkr_lib.sh" ]

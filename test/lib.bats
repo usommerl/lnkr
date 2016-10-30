@@ -23,7 +23,7 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
-@test '__main should print help if unkown argument is provided' {
+@test '__main should print help if unknown argument is provided' {
   run __main --wrong-argument
   [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
   [ "$status" -eq 1 ]
@@ -35,7 +35,7 @@ teardown() {
   [ "$status" -eq 0 ]
 }
 
-@test '__main should add library, log and journal to gitignore' {
+@test '__main should add library and journal files to gitignore' {
   run __main
   [ -f "$TESTSPACE/.gitignore" ]
   [ "$(cat $TESTSPACE/.gitignore | wc -l)" -eq 2 ]
@@ -164,7 +164,7 @@ teardown() {
   [ "$(git remote -vv show | grep -e 'git@github.com.*(push)' | wc -l)" -eq 1 ]
 }
 
-@test 'setup_submodules should not modify push url if explicitly specified ' {
+@test 'setup_submodules should not modify push url if it is requested explicitly' {
   git clone https://github.com/usommerl/configuration-bash.git "$TESTSPACE"
   run setup_submodules 'KEEP_PUSH_URL'
   cd $TESTSPACE/shell-commons
