@@ -5,7 +5,7 @@ load stub
 
 setup() {
   make_testspace
-  readonly LIB_TEST=true
+  readonly LNKR_LIB_TEST=true
   readonly LIB_NAME=lnkr_lib.sh
   readonly START_DIRECTORY=$TESTSPACE
   source $REPO_ROOT/$LIB_NAME
@@ -121,6 +121,34 @@ teardown() {
   [ "${#lines[@]}" -eq 2 ]
   [ $(echo "${lines[0]}" | grep "$id.*BAK.*link.backup-$ts" | wc -l) -eq 1 ]
   [ $(echo "${lines[1]}" | grep "$id.*LNK.*file.*link" | wc -l) -eq 1 ]
+}
+
+@test 'sudo function should enable sudo mode for link function' {
+  stub sudo 'Stub sudo command'
+  SUDO_CMD="$BATS_TEST_DIRNAME/stub/sudo"
+  local linkname='link'
+  touch "$TESTSPACE/$linkname"
+  run sudo link "$TESTSPACE/file" "$TESTSPACE/$linkname"
+  [ "$status" -eq 0 ]
+  [ $(echo "${lines[1]}" | grep "Stub sudo" | wc -l) -eq 1 ]
+  [ $(echo "${lines[2]}" | grep "Create backup" | wc -l) -eq 1 ]
+  [ $(echo "${lines[3]}" | grep "Stub sudo" | wc -l) -eq 1 ]
+  [ $(echo "${lines[4]}" | grep "Stub sudo" | wc -l) -eq 1 ]
+  [ $(echo "${lines[5]}" | grep "Create link" | wc -l) -eq 1 ]
+}
+
+@test 'sudo function should use sudo command for every argument other than link' {
+  stub sudo 'Stub sudo command'
+  SUDO_CMD="$BATS_TEST_DIRNAME/stub/sudo"
+  run sudo random_command
+  [ $(echo "${lines[@]}" | grep "Stub sudo" | wc -l) -eq 1 ]
+  [ "$status" -eq 0 ]
+}
+
+@test 'sudo function should fail if sudo command is not available' {
+  run sudo link target_location link_location
+  [ "$status" -eq 1 ]
+  [ $(echo "${lines[@]}" | grep 'sudo.*not available' | wc -l) -eq 1 ]
 }
 
 @test 'fail should abort script with exit code 1' {

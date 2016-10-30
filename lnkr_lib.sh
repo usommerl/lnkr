@@ -2,7 +2,7 @@
 
 readonly JOURNAL_NAME='.lnkr.journal'
 readonly JOURNAL_FILE=$START_DIRECTORY/$JOURNAL_NAME
-readonly REPO_NAME=$(basename $(git rev-parse --show-toplevel))
+readonly REPO_NAME="$(basename $(git rev-parse --show-toplevel))"
 readonly ACTION_LINK='LNK'
 readonly ACTION_BACKUP='BAK'
 readonly INSTALL_SWITCH_SHORT='-i'
@@ -11,7 +11,8 @@ readonly REMOVE_SWITCH_SHORT='-r'
 readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
-readonly LOG_TO_SYSLOG=$(command -v logger)
+readonly LOG_TO_SYSLOG="$(command -v logger)"
+[ "$LNKR_LIB_TEST" ] || readonly SUDO_CMD="$(command -v sudo)"
 
 info() {
   __logger_base 'info' "$@"
@@ -26,6 +27,17 @@ fail() {
   exit 1
 }
 
+sudo() {
+  [ "$SUDO_CMD" ] || fail 'Command sudo is not available'
+  if [ "$1" == 'link' ]; then
+    sudo_link="$SUDO_CMD "
+    eval "$@"
+    unset sudo_link
+  else
+    eval "$SUDO_CMD $@"
+  fi
+}
+
 link() {
   local link_target=$1
   local link_location=$2
@@ -33,8 +45,8 @@ link() {
     warn "Link target $link_target does not exist. You will create a dead link!"
   fi
   [ -e "$link_location" ] && __create_backup "$link_location"
-  mkdir -p $(dirname "$link_location")
-  ln -sfT $link_target $link_location &&
+  eval "${sudo_link}mkdir -p $(dirname $link_location)"
+  eval "${sudo_link}ln -sfT $link_target $link_location" &&
     info "Create link: $link_location -> $link_target" &&
       __record_link "$link_target" "$link_location"
 }
@@ -111,7 +123,7 @@ __install() {
 __create_backup() {
   local link_location=$1
   local backup_location="${link_location}.backup-$(__timestamp)"
-  [ ! -e "$backup_location" ] && mv -n $link_location $backup_location &&
+  [ ! -e "$backup_location" ] && eval "${sudo_link}mv -n $link_location $backup_location" &&
     info "Create backup: $link_location -> $backup_location" &&
       __record_backup "$backup_location" || fail "Could not create backup"
 }
@@ -132,13 +144,13 @@ __revert_action() {
   local user="$(__extract_field "$1" "1")"
   local action="$(__extract_field "$1" "3")"
   local args="$(__extract_field "$1" "4-")"
-  [ "$user" == "$(id -un)" ] && local sudo="sudo -u $user "
+  [ "$user" == "root" ] && local sudo_revert="sudo "
   case "$action" in
     "$ACTION_LINK")
-      __remove_link "$sudo" "$args"
+      __remove_link "$sudo_revert" "$args"
       ;;
     "$ACTION_BACKUP")
-      __restore_bakup "$sudo" "$args"
+      __restore_bakup "$sudo_revert" "$args"
       ;;
   esac
 }
@@ -194,8 +206,9 @@ __record_link() {
 }
 
 __journal_base() {
-  local sha="$(printf "$(__timestamp)$(id -un)$1" | sha1sum | cut -d " " -f 1)"
-  printf "%s\t%s\t" "$sha" "$(id -un)" >> $JOURNAL_FILE
+  [ "$sudo_link" ] && local user='root' || local user="$(id -un)"
+  local sha="$(printf "$(__timestamp) $user $1" | sha1sum | cut -d " " -f 1)"
+  printf "%s\t%s\t" "$sha" "$user" >> $JOURNAL_FILE
   printf "$1\n" >> $JOURNAL_FILE
 }
 
@@ -247,7 +260,7 @@ __print_help() {
   printf '\n'
 }
 
-[ -n "$LIB_TEST" ] && return
+[ "$LNKR_LIB_TEST" ] && return
 
 __main "$@"
 exit 0
