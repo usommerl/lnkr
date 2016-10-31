@@ -248,14 +248,14 @@ __print_help() {
   printf '\n'
   printf "SYNOPSIS: ${script_name} [OPTION]\n\n"
   printf "$indent1" "${INSTALL_SWITCH_SHORT}, ${INSTALL_SWITCH_LONG}"
-  printf "$indent2" "Executes the install procedure defined in install()."
-  printf "$indent2" "Symbolic links that are created with lnk and su_lnk won't"
-  printf "$indent2" "overwrite existing files. These functions create backups"
+  printf "$indent2" "Executes the install procedure defined in function install."
+  printf "$indent2" "Symbolic links that are created with function link won't"
+  printf "$indent2" "overwrite existing files. The link function creates backups"
   printf "$indent2" "that will be restored automatically if you run this script"
   printf "$indent2" "with the ${REMOVE_SWITCH_LONG} option."
   printf '\n'
   printf "$indent1" "${REMOVE_SWITCH_SHORT}, ${REMOVE_SWITCH_LONG}"
-  printf "$indent2" "Removes links and restores all backups that where"
+  printf "$indent2" "Removes symlinks and restores all backups that where"
   printf "$indent2" "made during a previous install."
   printf '\n'
 }

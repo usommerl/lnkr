@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 
-# Define method install and use library methods lnk
-# and su_lnk to create symlinks to configuration files.
-# These methods will automatically create backups if a
-# file exists at the link location.
+# Define method install and use library funtion link
+# to create symlinks to your configuration files.
 
 function install() {
   echo 'Please define install() function'
   echo 'Example:'
-  echo '  lnk $CURRENT_DIRECTORY/file ~/file'
-  echo '  su_lnk $CURRENT_DIRECTORY/file /etc/file'
+  echo '  link file $HOME/file'
 }
 
 # Do not alter bootstrap code unless you know what you are doing.
