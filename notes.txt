@@ -1,16 +1,16 @@
 TODO
 ====
-- Extend test suite
-- Create symlinks with root privileges if needed
-- Improve output to stdout
-- Add method to remove module entirely
-  ✓ New logfile concept to store information about created symlinks
 ? Change CLI-API (commands instead of options)
 ? Add method for status check
 ? Add methods to migrate to newer version of lnkr_lib
 
 DONE
 ====
+✓ Extend test suite
+✓ Create symlinks with root privileges if needed
+✓ Improve output to stdout
+✓ Add method to remove module entirely
+  ✓ New logfile concept to store information about created symlinks
 ✓ Create a basic testsuite
 ✓ Download lnkr on the fly (wget/curl) instead of using git submodule
 ✓ Make code comply with Google shell style guide
@@ -21,12 +21,13 @@ DONE
   ✓ management-template.sh -> lnkr_lib.sh
   ✓ .backup.log -> lnkr.log
 
-Logfile format
+
+Journal file format
 ==============
 
 General concept
 ---------------
-<TIMESTAMP><SEPERATOR><USER><SEPERATOR><OPERATION><SEPERATOR>[VALUES]
+<SHA><SEPERATOR><USER><SEPERATOR><OPERATION><SEPERATOR>[VALUES]
 
 Supported operations
 --------------------
@@ -37,13 +38,9 @@ Supported operations
   - Keyword : BAK
   - Values  : /home/example/.bashrc<BACKUP_SUFFIX>
 
-<TIMESTAMP>
------------
-YYYY-MM-DDThh:mm:ss[+-]hh:mm
-
 <SEPERATOR>
 -----------
-\t\0
+\t
 
 <BACKUP_SUFFIX>
 ---------------
