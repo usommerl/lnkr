@@ -13,7 +13,7 @@ function install() {
 #################################################################################
 
 __url() {
-  printf "https://raw.githubusercontent.com/usommerl/configuration-module-lib/v1/$1"
+  printf "https://raw.githubusercontent.com/usommerl/lnkr/master/$1"
 }
 
 __bootstrap() {
