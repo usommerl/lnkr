@@ -1,3 +1,3 @@
 # lnkr
-[![travis-ci](https://travis-ci.org/usommerl/configuration-module-lib.svg?branch=v1)](https://travis-ci.org/usommerl/configuration-module-lib)
-[![codecov](https://codecov.io/gh/usommerl/configuration-module-lib/branch/v1/graph/badge.svg)](https://codecov.io/gh/usommerl/configuration-module-lib)
+[![travis-ci](https://travis-ci.org/usommerl/lnkr.svg?branch=master)](https://travis-ci.org/usommerl/lnkr)
+[![codecov](https://codecov.io/gh/usommerl/lnkr/branch/v1/graph/badge.svg)](https://codecov.io/gh/usommerl/lnkr)
