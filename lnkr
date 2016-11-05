@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Define method install and use library funtion link
+# Define method install and use library function link
 # to create symlinks to your configuration files.
 
 function install() {
@@ -11,14 +11,16 @@ function install() {
 
 # Do not alter bootstrap code unless you know what you are doing.
 #################################################################################
-function __bootstrap() {
-  readonly START_DIRECTORY=$(dirname $(readlink -f "$0"))
-  readonly LIB_NAME=lnkr_lib.sh
-  local lib_path=$START_DIRECTORY/$LIB_NAME
-  local url=https://raw.githubusercontent.com/usommerl/configuration-module-lib/v1/$LIB_NAME
-  cd $START_DIRECTORY
-  [ ! -e "$lib_path" ] && (curl -O $url || wget $url)
-  [ -e "$lib_path" ] && source "$lib_path" "$@"
+
+__url() {
+  printf "https://raw.githubusercontent.com/usommerl/configuration-module-lib/v1/$1"
+}
+
+__bootstrap() {
+  local lnkr_lib=lnkr_lib.sh
+  local url=$(__url $lnkr_lib)
+  [ ! -e "$lnkr_lib" ] && (curl -O $url || wget $url)
+  [ -e "$lnkr_lib" ] && source "$lnkr_lib" "$@"
   echo "Bootstrap failed. Aborting."; exit 1
 }
-__bootstrap "$@"
+cd $(dirname $(readlink -f "$0")) && __bootstrap "$@"

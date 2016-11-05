@@ -4,11 +4,10 @@ load test_helper
 load stub
 
 setup() {
-  make_testspace
+  make_testspace && cd $TESTSPACE
+  cp $REPO_ROOT/lnkr_lib.sh .
   readonly LNKR_LIB_TEST=true
-  readonly LIB_NAME=lnkr_lib.sh
-  readonly START_DIRECTORY=$TESTSPACE
-  source $REPO_ROOT/$LIB_NAME
+  source lnkr_lib.sh
 }
 
 teardown() {
@@ -157,17 +156,19 @@ teardown() {
 }
 
 @test 'setup_submodules should initialize submodules and modify push url' {
-  git clone https://github.com/usommerl/configuration-bash.git "$TESTSPACE"
+  repo_with_submodules
   run setup_submodules
-  cd $TESTSPACE/shell-commons
+  local submodule_dir=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  cd $submodule_dir
   [ "$(ls -1 . | wc -l)" -gt 0 ]
   [ "$(git remote -vv show | grep -e 'git@github.com.*(push)' | wc -l)" -eq 1 ]
 }
 
 @test 'setup_submodules should not modify push url if it is requested explicitly' {
-  git clone https://github.com/usommerl/configuration-bash.git "$TESTSPACE"
+  repo_with_submodules
   run setup_submodules 'KEEP_PUSH_URL'
-  cd $TESTSPACE/shell-commons
+  local submodule_dir=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  cd $submodule_dir
   [ "$(ls -1 . | wc -l)" -gt 0 ]
   [ "$(git remote -vv show | grep -e 'https://github.com.*(push)' | wc -l)" -eq 1 ]
 }

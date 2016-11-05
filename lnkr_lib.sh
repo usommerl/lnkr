@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-readonly JOURNAL_NAME='.lnkr.journal'
-readonly JOURNAL_FILE=$START_DIRECTORY/$JOURNAL_NAME
+readonly JOURNAL_FILENAME='.lnkr.journal'
+readonly JOURNAL="$(dirname $(readlink -f $BASH_SOURCE))/$JOURNAL_FILENAME"
 readonly REPO_NAME="$(basename $(git rev-parse --show-toplevel))"
 readonly ACTION_LINK='LNK'
 readonly ACTION_BACKUP='BAK'
@@ -111,7 +111,7 @@ __remove() {
 }
 
 __install() {
-  if [ -s "$JOURNAL_FILE" ]; then
+  if [ -s "$JOURNAL" ]; then
     fail "Journal is not empty. Repository $REPO_NAME already installed?"
   elif declare -F install &> /dev/null; then
     install
@@ -129,14 +129,14 @@ __create_backup() {
 }
 
 __revert_recorded_actions() {
-  if [ ! -s "$JOURNAL_FILE" ]; then
+  if [ ! -s "$JOURNAL" ]; then
     warn "Abort remove: Journal contains no entries" && return
   fi
   while read -r line; do
     remove_journal_entry='true'
     __revert_action "$line"
     [ "$remove_journal_entry" == 'true' ] && __remove_journal_entry "$line"
-  done < <(tac "$JOURNAL_FILE")
+  done < <(tac "$JOURNAL")
   unset line remove_journal_entry
 }
 
@@ -184,7 +184,7 @@ __restore_bakup() {
 
 __remove_journal_entry() {
   local pattern="^$(__extract_field "$1" "1")"
-  sed -i "/$pattern/d" "$JOURNAL_FILE"
+  sed -i "/$pattern/d" "$JOURNAL"
 }
 
 __extract_field() {
@@ -208,8 +208,8 @@ __record_link() {
 __journal_base() {
   [ "$sudo_link" ] && local user='root' || local user="$(id -un)"
   local sha="$(printf "$(__timestamp) $user $1" | sha1sum | cut -d " " -f 1)"
-  printf "%s\t%s\t" "$sha" "$user" >> $JOURNAL_FILE
-  printf "$1\n" >> $JOURNAL_FILE
+  printf "%s\t%s\t" "$sha" "$user" >> $JOURNAL
+  printf "$1\n" >> $JOURNAL
 }
 
 __logger_base() {
@@ -235,7 +235,7 @@ __to_term_color() {
 }
 
 __add_to_gitignore() {
-  for filename in "$LIB_NAME" "$JOURNAL_NAME"; do
+  for filename in "$BASH_SOURCE" "$JOURNAL_FILENAME"; do
     grep -E "$filename\$" .gitignore &> /dev/null
     [ "$?" -ne 0 ] && echo "$filename" >> .gitignore
   done
