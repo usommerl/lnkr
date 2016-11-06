@@ -30,10 +30,9 @@ __determine_library_version() {
 __bootstrap() {
   local src='lnkr_lib.sh'
   local ver=$(__determine_library_version)
-  local url="https://raw.githubusercontent.com/usommerl/lnkr/$ver/$src"
   local lib="$(__cache_directory)/${src/%.sh/_$ver.sh}"
+  local url="https://raw.githubusercontent.com/usommerl/lnkr/$ver/$src"
   [ ! -e "$lib" ] && (curl -so $lib $url || wget -qO $lib $url) 2>&-
-  [ -e "$lib" ] && source "$lib" "$@"
-  printf 'Bootstrap failed. Aborting.\n'; exit 1
+  [ -e "$lib" ] && source "$lib" "$@" || (printf 'Bootstrap failed\n'; exit 1)
 }
 cd $(dirname $(readlink -f "$0")) && __bootstrap "$@"

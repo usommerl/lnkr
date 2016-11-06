@@ -5,6 +5,7 @@ load stub
 
 setup() {
   make_testspace
+  git init
   cp $LNKR_REPO_ROOT/lnkr $TESTSPACE
   export lnkr=$TESTSPACE/lnkr
 }
@@ -56,7 +57,7 @@ teardown() {
   stub wget "bash: wget: command not found" 127
   run $lnkr --help
   [ "$status" -eq 1 ]
-  [ "${lines[2]}" = "Bootstrap failed. Aborting." ]
+  [ "${lines[2]}" = "Bootstrap failed" ]
   [ -e "$TESTSPACE/$LOCKFILE" ]
   [ "$(ls -1 $LIB_DIRECTORY/*.sh | wc -l)" -eq 0 ]
 }
