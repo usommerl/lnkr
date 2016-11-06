@@ -9,18 +9,31 @@ function install() {
   echo '  link file $HOME/file'
 }
 
-# Do not alter bootstrap code unless you know what you are doing.
+# Code to bootstrap the lnkr library. Do not edit the lines below.
 #################################################################################
+__cache_directory() {
+  local directory="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
+  mkdir -p "$directory" &>/dev/null && printf "$directory"
+}
 
-__url() {
-  printf "https://raw.githubusercontent.com/usommerl/lnkr/master/$1"
+__latest_version() {
+  local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
+  printf "$((curl -s $url || wget -qO - $url) 2>&- | grep 'tag_name' | cut -d '"' -f 4)"
+}
+
+__determine_library_version() {
+  local lockfile='.lnkr.lock'
+  local locked_version="$(head -n 1 $lockfile 2>&-)"
+  printf "${locked_version:-$(__latest_version)}" | tee "$lockfile"
 }
 
 __bootstrap() {
-  local lnkr_lib=lnkr_lib.sh
-  local url=$(__url $lnkr_lib)
-  [ ! -e "$lnkr_lib" ] && (curl -O $url || wget $url)
-  [ -e "$lnkr_lib" ] && source "$lnkr_lib" "$@"
-  echo "Bootstrap failed. Aborting."; exit 1
+  local src='lnkr_lib.sh'
+  local ver=$(__determine_library_version)
+  local url="https://raw.githubusercontent.com/usommerl/lnkr/$ver/$src"
+  local lib="$(__cache_directory)/${src/%.sh/_$ver.sh}"
+  [ ! -e "$lib" ] && (curl -so $lib $url || wget -qO $lib $url) 2>&-
+  [ -e "$lib" ] && source "$lib" "$@"
+  printf 'Bootstrap failed. Aborting.\n'; exit 1
 }
 cd $(dirname $(readlink -f "$0")) && __bootstrap "$@"

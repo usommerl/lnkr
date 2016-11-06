@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+readonly REPO_ROOT="$(readlink -f $(git rev-parse --show-toplevel))"
+readonly REPO_NAME="$(basename $REPO_ROOT)"
 readonly JOURNAL_FILENAME='.lnkr.journal'
-readonly JOURNAL="$(dirname $(readlink -f $BASH_SOURCE))/$JOURNAL_FILENAME"
-readonly REPO_NAME="$(basename $(git rev-parse --show-toplevel))"
+readonly JOURNAL="$REPO_ROOT/$JOURNAL_FILENAME"
 readonly ACTION_LINK='LNK'
 readonly ACTION_BACKUP='BAK'
 readonly INSTALL_SWITCH_SHORT='-i'
@@ -13,6 +14,8 @@ readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
 readonly LOG_TO_SYSLOG="$(command -v logger)"
 [ "$LNKR_LIB_TEST" ] || readonly SUDO_CMD="$(command -v sudo)"
+
+echo $JOURNAL
 
 info() {
   __logger_base 'info' "$@"
@@ -235,10 +238,9 @@ __to_term_color() {
 }
 
 __add_to_gitignore() {
-  for filename in "$BASH_SOURCE" "$JOURNAL_FILENAME"; do
-    grep -E "$filename\$" .gitignore &> /dev/null
-    [ "$?" -ne 0 ] && echo "$filename" >> .gitignore
-  done
+  local gitignore="$REPO_ROOT/.gitignore"
+  grep -E "$JOURNAL_FILENAME\$" "$gitignore" &>/dev/null
+  [ "$?" -ne 0 ] && printf '%s\n' "$JOURNAL_FILENAME" >> "$gitignore"
 }
 
 __print_help() {

@@ -4,10 +4,10 @@ load test_helper
 load stub
 
 setup() {
-  make_testspace && cd $TESTSPACE
-  cp $REPO_ROOT/lnkr_lib.sh .
   readonly LNKR_LIB_TEST=true
-  source lnkr_lib.sh
+  make_testspace && cd $TESTSPACE && git init
+  cp $LNKR_REPO_ROOT/$LIB_FILENAME .
+  source $LIB_FILENAME
 }
 
 teardown() {
@@ -34,19 +34,17 @@ teardown() {
   [ "$status" -eq 0 ]
 }
 
-@test '__main should add library and journal files to gitignore' {
+@test '__main should add journal file to gitignore' {
   run __main
   [ -f "$TESTSPACE/.gitignore" ]
-  [ "$(cat $TESTSPACE/.gitignore | wc -l)" -eq 2 ]
-  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+  [ "$(cat $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
   [ "$(grep '.lnkr.journal' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
 }
 
-@test '__main should not add library multiple times to gitignore' {
+@test '__main should not add duplicate entries to gitignore' {
   run __main
   run __main
-  [ "$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)" -eq 2 ]
-  [ "$(grep 'lnkr_lib.sh' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
+  [ "$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)" -eq 1 ]
   [ "$(grep '.lnkr.journal' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
 }
 
@@ -156,7 +154,7 @@ teardown() {
 }
 
 @test 'setup_submodules should initialize submodules and modify push url' {
-  repo_with_submodules
+  make_repo_with_submodule
   run setup_submodules
   local submodule_dir=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
   cd $submodule_dir
@@ -164,8 +162,8 @@ teardown() {
   [ "$(git remote -vv show | grep -e 'git@github.com.*(push)' | wc -l)" -eq 1 ]
 }
 
-@test 'setup_submodules should not modify push url if it is requested explicitly' {
-  repo_with_submodules
+@test 'setup_submodules should not modify push url if it is requested' {
+  make_repo_with_submodule
   run setup_submodules 'KEEP_PUSH_URL'
   local submodule_dir=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
   cd $submodule_dir
