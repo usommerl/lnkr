@@ -2,7 +2,7 @@ readonly TESTSPACE=$BATS_TEST_DIRNAME/testspace
 readonly LNKR_REPO_ROOT=$(git rev-parse --show-toplevel)
 readonly LIB_FILENAME=lnkr_lib.sh
 readonly LOCKFILE=.lnkr.lock
-readonly LIB_DIRECTORY="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
+readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
 
 print_output() {
   echo >&2
@@ -20,8 +20,8 @@ rm_testspace() {
   [ -d "$TESTSPACE" ] && cd "$LNKR_REPO_ROOT" && rm -rf "$TESTSPACE"
 }
 
-rm_lib() {
-  rm -rf "$LIB_DIRECTORY"
+rm_cache() {
+  rm -rf "$CACHE_DIR"
 }
 
 make_repo_with_submodule() {
@@ -33,5 +33,5 @@ make_repo_with_submodule() {
 
 assert_lib_exists() {
   local version=$(head -n 1 "$TESTSPACE/$LOCKFILE") 2>&-
-  [ -e "$LIB_DIRECTORY/${LIB_FILENAME/%.sh/_$version.sh}" ]
+  [ -e "$CACHE_DIR/${LIB_FILENAME/%.sh/_$version.sh}" ]
 }

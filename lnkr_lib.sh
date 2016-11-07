@@ -15,8 +15,6 @@ readonly HELP_SWITCH_LONG='--help'
 readonly LOG_TO_SYSLOG="$(command -v logger)"
 [ "$LNKR_LIB_TEST" ] || readonly SUDO_CMD="$(command -v sudo)"
 
-echo $JOURNAL
-
 info() {
   __logger_base 'info' "$@"
 }

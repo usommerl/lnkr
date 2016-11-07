@@ -17,11 +17,18 @@ __cache_directory() {
 }
 
 __latest_version() {
+  local cache="$(__cache_directory)/latest"
+  local difference="$(($(date +%s) - $(stat -c %Y $cache 2>&- || printf '0')))"
   local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
-  printf "$((curl -s $url || wget -qO - $url) 2>&- | grep 'tag_name' | cut -d '"' -f 4)"
+  local fetch="(curl -Lfs $url || wget -qO - $url) 2>&-"
+  if [ "$difference" -le 3600 ]; then
+    printf "$(head -n 1 $cache 2>&-)"
+  else
+    printf "$(eval $fetch | grep 'tag_name' | cut -d '"' -f 4)" | tee "$cache"
+  fi
 }
 
-__determine_library_version() {
+__determine_version() {
   local lockfile='.lnkr.lock'
   local locked_version="$(head -n 1 $lockfile 2>&-)"
   printf "${locked_version:-$(__latest_version)}" | tee "$lockfile"
@@ -29,10 +36,12 @@ __determine_library_version() {
 
 __bootstrap() {
   local src='lnkr_lib.sh'
-  local ver=$(__determine_library_version)
+  local ver="$(__determine_version)"
   local lib="$(__cache_directory)/${src/%.sh/_$ver.sh}"
   local url="https://raw.githubusercontent.com/usommerl/lnkr/$ver/$src"
-  [ ! -e "$lib" ] && (curl -so $lib $url || wget -qO $lib $url) 2>&-
-  [ -e "$lib" ] && source "$lib" "$@" || (printf 'Bootstrap failed\n'; exit 1)
+  [ ! -e "$lib" ] && (curl -Lfso "$lib" "$url" || wget -qO "$lib" "$url") 2>&-
+  [ -e "$lib" ] && source "$lib" "$@"
+  printf 'Bootstrap failed\n'; exit 1
 }
+
 cd $(dirname $(readlink -f "$0")) && __bootstrap "$@"
