@@ -13,25 +13,25 @@ function install() {
 #################################################################################
 __cache_directory() {
   local directory="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
-  mkdir -p "$directory" &>/dev/null && printf "$directory"
+  mkdir -p "$directory" &>/dev/null && printf "%s" "$directory"
 }
 
 __latest_version() {
   local cache="$(__cache_directory)/latest"
-  local difference="$(($(date +%s) - $(stat -c %Y $cache 2>&- || printf '0')))"
+  local difference="$(($(date +%s) - $(stat -c %Y "$cache" 2>&- || printf '0')))"
   local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
-  local fetch="(curl -Lfs $url || wget -qO - $url) 2>&-"
+  local tag_name="(curl -Lfs $url || wget -qO - $url) 2>&- | grep 'tag_name'"
   if [ "$difference" -le 3600 ]; then
-    printf "$(head -n 1 $cache 2>&-)"
+    printf "%s" "$(head -n 1 "$cache" 2>&-)"
   else
-    printf "$(eval $fetch | grep 'tag_name' | cut -d '"' -f 4)" | tee "$cache"
+    printf "%s" "$(eval "$tag_name"  | cut -d '"' -f 4)" | tee "$cache"
   fi
 }
 
 __determine_version() {
   local lockfile='.lnkr.lock'
-  local locked_version="$(head -n 1 $lockfile 2>&-)"
-  printf "${locked_version:-$(__latest_version)}" | tee "$lockfile"
+  local locked_version="$(head -n 1 "$lockfile" 2>&-)"
+  printf "%s" "${locked_version:-$(__latest_version)}" | tee "$lockfile"
 }
 
 __bootstrap() {
@@ -44,4 +44,4 @@ __bootstrap() {
   printf 'Bootstrap failed\n'; exit 1
 }
 
-cd $(dirname $(readlink -f "$0")) && __bootstrap "$@"
+cd "$(dirname "$(readlink -f "$0")")" && __bootstrap "$@"

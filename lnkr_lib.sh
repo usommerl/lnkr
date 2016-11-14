@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-readonly REPO_ROOT="$(readlink -f $(git rev-parse --show-toplevel))"
-readonly REPO_NAME="$(basename $REPO_ROOT)"
+readonly REPO_ROOT="$(readlink -f "$(git rev-parse --show-toplevel)")"
+readonly REPO_NAME="$(basename "$REPO_ROOT")"
 readonly JOURNAL_FILENAME='.lnkr.journal'
 readonly JOURNAL="$REPO_ROOT/$JOURNAL_FILENAME"
 readonly ACTION_LINK='LNK'
@@ -46,7 +46,7 @@ link() {
     warn "Link target $link_target does not exist. You will create a dead link!"
   fi
   [ -e "$link_location" ] && __create_backup "$link_location"
-  eval "${sudo_link}mkdir -p $(dirname $link_location)"
+  eval "${sudo_link}mkdir -p $(dirname "$link_location")"
   eval "${sudo_link}ln -sfT $link_target $link_location" &&
     info "Create link: $link_location -> $link_target" &&
       __record_link "$link_target" "$link_location"
@@ -90,7 +90,7 @@ __main() {
 }
 
 __operation() {
-  local callback="__$(echo $1 | tr '[:upper:]' '[:lower:]')"
+  local callback="__$(echo "$1" | tr '[:upper:]' '[:lower:]')"
   info "$1 repository $REPO_NAME"
   if declare -F "$callback" &> /dev/null; then
     $callback
@@ -193,7 +193,7 @@ __extract_field() {
 }
 
 __timestamp() {
-  echo "$(date --iso-8601=s)"
+  printf "%s" "$(date --iso-8601=s)"
 }
 
 __record_backup() {
@@ -209,16 +209,16 @@ __record_link() {
 __journal_base() {
   [ "$sudo_link" ] && local user='root' || local user="$(id -un)"
   local sha="$(printf "$(__timestamp) $user $1" | sha1sum | cut -d " " -f 1)"
-  printf "%s\t%s\t" "$sha" "$user" >> $JOURNAL
-  printf "$1\n" >> $JOURNAL
+  printf "%s\t%s\t" "$sha" "$user" >> "$JOURNAL"
+  printf "$1\n" >> "$JOURNAL"
 }
 
 __logger_base() {
   local level=$1
-  local color=$(__to_term_color $level)
+  local color="$(__to_term_color "$level")"
   local priority=$([ "$level" == 'fail' ] && printf 'err' || printf "$level")
   printf "${color}[$level]\e[0m $2\n"
-  [ "$LOG_TO_SYSLOG" ] && logger -t $(basename $0) -p $priority "$2"
+  [ "$LOG_TO_SYSLOG" ] && logger -t "$(basename "$0")" -p "$priority" "$2"
 }
 
 __to_term_color() {
@@ -237,12 +237,13 @@ __to_term_color() {
 
 __add_to_gitignore() {
   local gitignore="$REPO_ROOT/.gitignore"
-  grep -E "$JOURNAL_FILENAME\$" "$gitignore" &>/dev/null
-  [ "$?" -ne 0 ] && printf '%s\n' "$JOURNAL_FILENAME" >> "$gitignore"
+  if ! grep -E "$JOURNAL_FILENAME\$" "$gitignore" &>/dev/null; then
+    printf '%s\n' "$JOURNAL_FILENAME" >> "$gitignore"
+  fi
 }
 
 __print_help() {
-  local script_name=$(basename $0)
+  local script_name="$(basename "$0")"
   local indent1='  %s\n\n'
   local indent2='      %s\n'
   printf '\n'
