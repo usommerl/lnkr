@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 
-# Define method install and use library function link
-# to create symlinks to your configuration files.
-
 function install() {
-  echo 'Please define install() function'
-  echo 'Example:'
-  echo '  link .bashrc ~/.bashrc'
+  info
+  info 'Define method install and use library function link'
+  info 'to create symlinks to your configuration files.'
+  info
+  info 'Example:'
+  info
+  info 'function install() {'
+  info '  link .bashrc ~/.bashrc'
+  info '}'
+  info
+  fail 'You need to define your own install function!'
 }
 
 # Code to bootstrap the lnkr library. Do not edit the lines below.

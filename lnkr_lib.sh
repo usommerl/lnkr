@@ -96,6 +96,7 @@ __main() {
 
 __operation() {
   local callback="__$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+  printf '\n'
   info "$1 repository $REPO_NAME"
   if declare -F "$callback" &> /dev/null; then
     $callback
@@ -103,7 +104,6 @@ __operation() {
     fail "Function $callback is not defined"
   fi
   info "$1 finished"
-  printf "\n"
 }
 
 __remove() {
