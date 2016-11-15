@@ -44,6 +44,12 @@ teardown() {
   [ $(echo "${lines[0]}" | grep 'fail.*line3' | wc -l) -eq 1 ]
 }
 
+@test '__logger_base should not fail if message begins with hyphen' {
+  run info '----'
+  [ $(echo "${lines[0]}" | grep 'info.*----' | wc -l) -eq 1 ]
+  [ "$(echo "${#lines[@]}")" -eq 1 ]
+}
+
 @test '__operation should fail if callback is not defined' {
   run __operation "test"
   [ "$status" -eq 1 ]

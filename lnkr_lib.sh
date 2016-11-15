@@ -223,7 +223,7 @@ __logger_base() {
   local color="$(__to_term_color "$level")"
   local priority=$([ "$level" == 'fail' ] && printf 'err' || printf "$level")
   printf "${color}[$level]\e[0m $2\n"
-  [ "$LOG_TO_SYSLOG" ] && logger -t "$(basename "$0")" -p "$priority" "$2"
+  [ "$LOG_TO_SYSLOG" ] && logger -t "$(basename "$0")" -p "$priority" -- "$2"
 }
 
 __to_term_color() {
