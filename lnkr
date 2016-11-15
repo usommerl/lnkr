@@ -6,7 +6,7 @@
 function install() {
   echo 'Please define install() function'
   echo 'Example:'
-  echo '  link file $HOME/file'
+  echo '  link .bashrc ~/.bashrc'
 }
 
 # Code to bootstrap the lnkr library. Do not edit the lines below.
