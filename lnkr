@@ -14,8 +14,10 @@ function install() {
   fail 'You need to define your own install function!'
 }
 
-# Code to bootstrap the lnkr library. Do not edit the lines below.
-#################################################################################
+# ----------------------------------- >8 ---------------------------------------
+# Do not touch the line above and do not insert code after this line.
+# The functions below are required to bootstrap the lnkr library.
+
 __cache_directory() {
   local directory="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
   mkdir -p "$directory" &>/dev/null && printf "%s" "$directory"
