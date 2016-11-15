@@ -34,7 +34,7 @@ __latest_version() {
 }
 
 __determine_version() {
-  local lockfile='.lnkr.lock'
+  local lockfile='lnkr.lock'
   local locked_version="$(head -n 1 "$lockfile" 2>&-)"
   printf "%s" "${locked_version:-$(__latest_version)}" | tee "$lockfile"
 }
