@@ -164,13 +164,13 @@ teardown() {
   [ "$(git remote -vv show | grep -e 'https://github.com.*(push)' | wc -l)" -eq 1 ]
 }
 
-@test '--install should fail if function install() is not defined' {
+@test 'install operation should fail if function install() is not defined' {
   run __main --install
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
 }
 
-@test '--install should succeed if function install() is defined' {
+@test 'install operation should succeed if function install() is defined' {
   install() {
     printf 'fake install function\n'
   }
@@ -179,7 +179,7 @@ teardown() {
   [ $(echo "${lines[@]}" | grep 'fake install' | wc -l) -eq 1 ]
 }
 
-@test '--install should fail if journal is not empty' {
+@test 'install operation should fail if journal is not empty' {
   install() {
     link "$TESTSPACE/file" 'link'
   }
@@ -191,7 +191,7 @@ teardown() {
   [ $(echo "${lines[@]}" | grep -i 'journal.*not empty' | wc -l) -eq 1 ]
 }
 
-@test '--remove should call pre and post hooks' {
+@test 'remove operation should call pre and post hooks' {
   pre_remove_hook() {
     printf 'pre_remove\n'
   }
@@ -203,13 +203,13 @@ teardown() {
   [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
 }
 
-@test '--remove should warn if journal is empty' {
+@test 'remove operation should warn if journal is empty' {
   run __main --remove
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep -i 'journal.*no entries' | wc -l) -eq 1 ]
 }
 
-@test '--remove should revert journal entries' {
+@test 'remove operation should revert journal entries' {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
@@ -221,7 +221,7 @@ teardown() {
   [ $(cat "$TEST_JOURNAL" | wc -l) -eq 0 ]
 }
 
-@test '--remove should not remove new file at recorded link location' {
+@test 'remove operation should not remove new file at recorded link location' {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
@@ -233,7 +233,7 @@ teardown() {
   [ $(grep 'BAK' "$TEST_JOURNAL" | wc -l) -eq 1 ]
 }
 
-@test '--remove should not fail if backup was removed' {
+@test 'remove operation should not fail if backup was removed' {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
@@ -246,7 +246,7 @@ teardown() {
   [ $(cat "$TEST_JOURNAL" | wc -l) -eq 0 ]
 }
 
-@test '--remove should not delete journal entry if link removal fails' {
+@test 'remove operation should not delete journal entry if link removal fails' {
   local linkname='link'
   printf 'file.linked\n' > "$TESTSPACE/file"
   run link "$TESTSPACE/file" $linkname
@@ -259,7 +259,7 @@ teardown() {
   [ $(grep 'LNK' "$TEST_JOURNAL" | wc -l) -eq 1 ]
 }
 
-@test '--remove should not delete journal entry if backup recreation fails' {
+@test 'remove operation should not delete journal entry if backup recreation fails' {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
