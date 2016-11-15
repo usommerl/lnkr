@@ -14,6 +14,7 @@ teardown() {
   print_output
   rm_stubs
   rm_testspace
+  rm_journal
 }
 
 @test '__main should print help if no argument is provided' {
@@ -32,20 +33,6 @@ teardown() {
   run __main --help
   [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
   [ "$status" -eq 0 ]
-}
-
-@test '__main should add journal file to gitignore' {
-  run __main
-  [ -f "$TESTSPACE/.gitignore" ]
-  [ "$(cat $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
-  [ "$(grep '.lnkr.journal' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
-}
-
-@test '__main should not add duplicate entries to gitignore' {
-  run __main
-  run __main
-  [ "$(wc -l $TESTSPACE/.gitignore | cut -d ' ' -f 1)" -eq 1 ]
-  [ "$(grep '.lnkr.journal' $TESTSPACE/.gitignore | wc -l)" -eq 1 ]
 }
 
 @test '__logger_base should print to STDOUT' {
@@ -114,7 +101,7 @@ teardown() {
   touch "$TESTSPACE/$linkname"
   stub date $ts
   run link "$TESTSPACE/file" $linkname
-  run cat $TESTSPACE/.lnkr.journal; 
+  run cat $TEST_JOURNAL
   [ "${#lines[@]}" -eq 2 ]
   [ $(echo "${lines[0]}" | grep "$id.*BAK.*link.backup-$ts" | wc -l) -eq 1 ]
   [ $(echo "${lines[1]}" | grep "$id.*LNK.*file.*link" | wc -l) -eq 1 ]
@@ -192,7 +179,7 @@ teardown() {
   }
   touch "$TESTSPACE/file"
   run __main --install
-  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -gt 0 ]
+  [ $(cat "$TEST_JOURNAL" | wc -l) -gt 0 ]
   run __main --install
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep -i 'journal.*not empty' | wc -l) -eq 1 ]
@@ -221,11 +208,11 @@ teardown() {
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
   run link "$TESTSPACE/file" $linkname
-  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 2 ]
+  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 2 ]
   run __main --remove
   [ "$status" -eq 0 ]
   [ $(grep 'file.orig' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
-  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 0 ]
+  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 0 ]
 }
 
 @test '--remove should not remove new file at recorded link location' {
@@ -237,7 +224,7 @@ teardown() {
   run __main --remove
   [ "$status" -eq 0 ]
   [ $(grep 'file.new' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
-  [ $(grep 'BAK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+  [ $(grep 'BAK' "$TEST_JOURNAL" | wc -l) -eq 1 ]
 }
 
 @test '--remove should not fail if backup was removed' {
@@ -250,7 +237,7 @@ teardown() {
   [ "$status" -eq 0 ]
   [ ! -f "$TESTSPACE/$linkname" ]
   [ $(echo "${lines[@]}" | grep -i 'backup.*does not exist' | wc -l) -eq 1 ]
-  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 0 ]
+  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 0 ]
 }
 
 @test '--remove should not delete journal entry if link removal fails' {
@@ -262,8 +249,8 @@ teardown() {
   [ "$status" -eq 0 ]
   [ -f "$TESTSPACE/$linkname" ]
   [ $(echo "${lines[@]}" | grep -i 'Unkown rm error' | wc -l) -eq 1 ]
-  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
-  [ $(grep 'LNK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 1 ]
+  [ $(grep 'LNK' "$TEST_JOURNAL" | wc -l) -eq 1 ]
 }
 
 @test '--remove should not delete journal entry if backup recreation fails' {
@@ -276,7 +263,7 @@ teardown() {
   [ "$status" -eq 0 ]
   [ ! -f "$TESTSPACE/$linkname" ]
   [ $(echo "${lines[@]}" | grep -i 'Unkown mv error' | wc -l) -eq 1 ]
-  [ $(cat "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
-  [ $(grep 'BAK' "$TESTSPACE/.lnkr.journal" | wc -l) -eq 1 ]
+  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 1 ]
+  [ $(grep 'BAK' "$TEST_JOURNAL" | wc -l) -eq 1 ]
 }
 

@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
+set -o errexit
+set -o errtrace
+set -o functrace
+
 readonly REPO_ROOT="$(readlink -f "$(git rev-parse --show-toplevel)")"
 readonly REPO_NAME="$(basename "$REPO_ROOT")"
-readonly JOURNAL_FILENAME='.lnkr.journal'
-readonly JOURNAL="$REPO_ROOT/$JOURNAL_FILENAME"
+readonly JOURNAL_FILENAME="$(printf "%s.journal" ${REPO_ROOT#'/'} | tr '/' '%')"
+readonly JOURNAL_DIRECTORY="${XDG_DATA_HOME:-$HOME/.local/share}/lnkr"
+readonly JOURNAL="$JOURNAL_DIRECTORY/$JOURNAL_FILENAME"
 readonly ACTION_LINK='LNK'
 readonly ACTION_BACKUP='BAK'
 readonly INSTALL_SWITCH_SHORT='-i'
@@ -13,7 +18,8 @@ readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
 readonly LOG_TO_SYSLOG="$(command -v logger)"
-[ "$LNKR_LIB_TEST" ] || readonly SUDO_CMD="$(command -v sudo)"
+[ -z "$LNKR_LIB_TEST" ] && readonly SUDO_CMD="$(command -v sudo)"
+[ -d "$JOURNAL_DIRECTORY" ] || mkdir -p "$JOURNAL_DIRECTORY" &>/dev/null
 
 info() {
   __logger_base 'info' "$@"
@@ -71,7 +77,6 @@ __modify_submodules_push_url() {
 }
 
 __main() {
-  __add_to_gitignore
   case "$1" in
     $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
       __operation 'Remove'
@@ -233,13 +238,6 @@ __to_term_color() {
       printf '\e[0m'
       ;;
   esac
-}
-
-__add_to_gitignore() {
-  local gitignore="$REPO_ROOT/.gitignore"
-  if ! grep -E "$JOURNAL_FILENAME\$" "$gitignore" &>/dev/null; then
-    printf '%s\n' "$JOURNAL_FILENAME" >> "$gitignore"
-  fi
 }
 
 __print_help() {
