@@ -3,4 +3,6 @@ engines:
     enabled: true
 ratings:
   paths:
-  - "**"
+  - "lnkr*"
+  - "**.bats"
+  - "**.bash"
