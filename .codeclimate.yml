@@ -2,4 +2,5 @@ engines:
   shellcheck:
     enabled: true
 ratings:
-  paths: []
+  paths:
+  - "**"
