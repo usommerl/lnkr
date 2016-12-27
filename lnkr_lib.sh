@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -o errexit
+set -o nounset
 set -o errtrace
 set -o functrace
 
@@ -18,7 +19,7 @@ readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
 readonly LOG_TO_SYSLOG="$(command -v logger)"
-[ -z "$LNKR_LIB_TEST" ] && readonly SUDO_CMD="$(command -v sudo)"
+[ -z "${LNKR_LIB_TEST:-}" ] && readonly SUDO_CMD="$(command -v sudo)"
 [ -d "$JOURNAL_DIRECTORY" ] || mkdir -p "$JOURNAL_DIRECTORY" &>/dev/null
 
 info() {
@@ -35,7 +36,7 @@ fail() {
 }
 
 sudo() {
-  [ "$SUDO_CMD" ] || fail 'Command sudo is not available'
+  [ -z "${SUDO_CMD:-}" ] && fail 'Command sudo is not available'
   if [ "$1" == 'link' ]; then
     sudo_link="$SUDO_CMD "
     eval "$@"
@@ -52,8 +53,8 @@ link() {
     warn "Link target $link_target does not exist. You will create a dead link!"
   fi
   [ -e "$link_location" ] && __create_backup "$link_location"
-  eval "${sudo_link}mkdir -p $(dirname "$link_location")"
-  eval "${sudo_link}ln -sfT $link_target $link_location" &&
+  eval "${sudo_link:-}mkdir -p $(dirname "$link_location")"
+  eval "${sudo_link:-}ln -sfT $link_target $link_location" &&
     info "Create link: $link_location -> $link_target" &&
       __record_link "$link_target" "$link_location"
 }
@@ -61,7 +62,7 @@ link() {
 setup_submodules() {
   info "Setup submodules"
   git submodule update --init
-  [ "$1" != 'KEEP_PUSH_URL' ] && __modify_submodules_push_url
+  [ "${1:-}" != 'KEEP_PUSH_URL' ] && __modify_submodules_push_url
 }
 
 __modify_submodules_push_url() {
@@ -77,7 +78,7 @@ __modify_submodules_push_url() {
 }
 
 __main() {
-  case "$1" in
+  case "${1:-}" in
     $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
       __operation 'Remove'
       ;;
@@ -129,7 +130,7 @@ __install() {
 __create_backup() {
   local link_location=$1
   local backup_location="${link_location}.backup-$(__timestamp)"
-  [ ! -e "$backup_location" ] && eval "${sudo_link}mv -n $link_location $backup_location" &&
+  [ ! -e "$backup_location" ] && eval "${sudo_link:-}mv -n $link_location $backup_location" &&
     info "Create backup: $link_location -> $backup_location" &&
       __record_backup "$backup_location" || fail "Could not create backup"
 }
@@ -153,10 +154,10 @@ __revert_action() {
   [ "$user" == "root" ] && local sudo_revert="sudo "
   case "$action" in
     "$ACTION_LINK")
-      __remove_link "$sudo_revert" "$args"
+      __remove_link "${sudo_revert:-}" "$args"
       ;;
     "$ACTION_BACKUP")
-      __restore_bakup "$sudo_revert" "$args"
+      __restore_bakup "${sudo_revert:-}" "$args"
       ;;
   esac
 }
@@ -167,7 +168,7 @@ __remove_link() {
   if [ ! -L "$link_location" ]; then
     warn "Could not delete link: '$link_location' is not a symlink"
   else
-    eval "${1}rm $link_location" &&
+    eval "${1:-}rm $link_location" &&
       info "Deleted link: '$link_location'" ||
         remove_journal_entry='false'
   fi
@@ -182,7 +183,7 @@ __restore_bakup() {
   elif [ ! -e "$backup_location" ]; then
     warn "Could not restore backup: '$backup_location' does not exist"
   else
-    eval "${1}mv -n $backup_location $original_location" &&
+    eval "${1:-}mv -n $backup_location $original_location" &&
       info "Restored backup: '$backup_location' -> '$original_location'" ||
         remove_journal_entry='false'
   fi
@@ -212,7 +213,7 @@ __record_link() {
 }
 
 __journal_base() {
-  [ "$sudo_link" ] && local user='root' || local user="$(id -un)"
+  [ -n "${sudo_link:-}" ] && local user='root' || local user="$(id -un)"
   local sha="$(printf "$(__timestamp) $user $1" | sha1sum | cut -d " " -f 1)"
   printf "%s\t%s\t" "$sha" "$user" >> "$JOURNAL"
   printf "$1\n" >> "$JOURNAL"
@@ -259,7 +260,7 @@ __print_help() {
   printf '\n'
 }
 
-[ "$LNKR_LIB_TEST" ] && return
+[ -n "${LNKR_LIB_TEST:-}" ] && return
 
 __main "$@"
 exit 0

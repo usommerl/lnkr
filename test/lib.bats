@@ -4,6 +4,7 @@ load test_helper
 load stub
 
 setup() {
+  BATS_TEST_SKIPPED=''
   readonly LNKR_LIB_TEST=true
   make_testspace && cd $TESTSPACE && git init
   cp $LNKR_REPO_ROOT/$LIB_FILENAME .
