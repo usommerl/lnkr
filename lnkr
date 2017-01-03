@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function install() {
+install() {
   info
   info 'Define method install and use library function link'
   info 'to create symlinks to your configuration files.'
@@ -14,31 +14,31 @@ function install() {
   fail 'You need to define your own install function!'
 }
 
-# ----------------------------------- >8 ---------------------------------------
-# Do not touch the line above and do not insert code after this line.
-# The functions below are required to bootstrap the lnkr library.
+#                 Do not alter bootstrap code below this line                 #
+# --------------------------------------------------------------------------- #
 
 __cache_directory() {
   local directory="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
-  mkdir -p "$directory" &>/dev/null && printf "%s" "$directory"
+  mkdir -p "$directory" &>/dev/null && echo "$directory"
 }
 
 __latest_version() {
   local cache="$(__cache_directory)/latest"
-  local difference="$(($(date +%s) - $(stat -c %Y "$cache" 2>&- || printf '0')))"
-  local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
-  local tag_name="(curl -Lfs $url || wget -qO - $url) 2>&- | grep 'tag_name'"
-  if [ "$difference" -le 3600 ]; then
-    printf "%s" "$(head -n 1 "$cache" 2>&-)"
+  local cache_age="$(($(date +%s) - $(stat -c %Y "$cache" 2>&- || echo '0')))"
+  if [ "$cache_age" -le 3600 ]; then
+    echo "$(head -n 1 "$cache" 2>&-)"
   else
-    printf "%s" "$(eval "$tag_name"  | cut -d '"' -f 4)" | tee "$cache"
+    local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
+    local json="$((curl -Lfs "$url" || wget -qO - "$url") 2>&-)"
+    local tag_name="$(echo "$json" | grep 'tag_name' | cut -d '"' -f 4)"
+    echo "$tag_name" | tee "$cache"
   fi
 }
 
 __determine_version() {
   local lockfile='lnkr.lock'
   local locked_version="$(head -n 1 "$lockfile" 2>&-)"
-  printf "%s" "${locked_version:-$(__latest_version)}" | tee "$lockfile"
+  echo "${locked_version:-$(__latest_version)}" | tee "$lockfile"
 }
 
 __bootstrap() {
@@ -48,7 +48,7 @@ __bootstrap() {
   local url="https://raw.githubusercontent.com/usommerl/lnkr/$ver/$src"
   [ ! -e "$lib" ] && (curl -Lfso "$lib" "$url" || wget -qO "$lib" "$url") 2>&-
   [ -e "$lib" ] && source "$lib" "$@"
-  printf 'Bootstrap failed\n'; exit 1
+  echo 'Bootstrap failed'; exit 1
 }
 
 cd "$(dirname "$(readlink -f "$0")")" && __bootstrap "$@"
