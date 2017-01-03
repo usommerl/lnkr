@@ -26,10 +26,10 @@ __latest_version() {
   local cache="$(__cache_directory)/latest"
   local cache_age="$(($(date +%s) - $(stat -c %Y "$cache" 2>&- || echo '0')))"
   if [ "$cache_age" -le 3600 ]; then
-    echo "$(head -n 1 "$cache" 2>&-)"
+    head -n 1 "$cache" 2>&-
   else
     local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
-    local json="$((curl -Lfs "$url" || wget -qO - "$url") 2>&-)"
+    local json="$( (curl -Lfs "$url" || wget -qO - "$url") 2>&- )"
     local tag_name="$(echo "$json" | grep 'tag_name' | cut -d '"' -f 4)"
     echo "$tag_name" | tee "$cache"
   fi
