@@ -7,7 +7,7 @@ set -o functrace
 
 readonly REPO_ROOT="$(readlink -f "$(git rev-parse --show-toplevel)")"
 readonly REPO_NAME="$(basename "$REPO_ROOT")"
-readonly JOURNAL_FILENAME="$(printf "%s.journal" ${REPO_ROOT#'/'} | tr '/' '%')"
+readonly JOURNAL_FILENAME="$(printf "%s.journal" "${REPO_ROOT#'/'}" | tr '/' '%')"
 readonly JOURNAL_DIRECTORY="${XDG_DATA_HOME:-$HOME/.local/share}/lnkr"
 readonly JOURNAL="$JOURNAL_DIRECTORY/$JOURNAL_FILENAME"
 readonly ACTION_LINK='LNK'
@@ -42,7 +42,7 @@ sudo() {
     eval "$@"
     unset sudo_link
   else
-    eval "$SUDO_CMD $@"
+    eval "$SUDO_CMD $*"
   fi
 }
 
@@ -176,7 +176,7 @@ __remove_link() {
 
 __restore_bakup() {
   local backup_location="$(__extract_field "$2" "1")"
-  local original_location="$(printf "$backup_location" | sed 's/\.backup.*$//')"
+  local original_location="$(echo "$backup_location" | sed 's/\.backup.*$//')"
   if [ -e "$original_location" ]; then
     warn "Could not restore backup: Path '$original_location' is occupied"
     remove_journal_entry='false'
@@ -195,11 +195,11 @@ __remove_journal_entry() {
 }
 
 __extract_field() {
-  printf "$1" | cut -d $'\t' -f "$2"
+  echo "$1" | cut -d $'\t' -f "$2"
 }
 
 __timestamp() {
-  printf "%s" "$(date --iso-8601=s)"
+  date --iso-8601=s
 }
 
 __record_backup() {
@@ -214,7 +214,7 @@ __record_link() {
 
 __journal_base() {
   [ -n "${sudo_link:-}" ] && local user='root' || local user="$(id -un)"
-  local sha="$(printf "$(__timestamp) $user $1" | sha1sum | cut -d " " -f 1)"
+  local sha="$(echo "$(__timestamp) $user $1" | sha1sum | cut -d " " -f 1)"
   printf "%s\t%s\t" "$sha" "$user" >> "$JOURNAL"
   printf "$1\n" >> "$JOURNAL"
 }
@@ -222,7 +222,7 @@ __journal_base() {
 __logger_base() {
   local level=$1
   local color="$(__to_term_color "$level")"
-  local priority=$([ "$level" == 'fail' ] && printf 'err' || printf "$level")
+  local priority=$([ "$level" == 'fail' ] && echo 'err' || echo "$level")
   printf "${color}[$level]\e[0m $2\n"
   [ "$LOG_TO_SYSLOG" ] && logger -t "$(basename "$0")" -p "$priority" -- "$2"
 }
