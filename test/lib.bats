@@ -158,7 +158,7 @@ teardown() {
 
 @test 'setup_submodules should not modify push url if it is requested' {
   make_repo_with_submodule
-  run setup_submodules 'KEEP_PUSH_URL'
+  run setup_submodules --keep-push-url
   local submodule_dir=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
   cd $submodule_dir
   [ "$(ls -1 . | wc -l)" -gt 0 ]

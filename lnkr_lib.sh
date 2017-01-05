@@ -62,7 +62,7 @@ link() {
 setup_submodules() {
   info "Setup submodules"
   git submodule update --init
-  [ "${1:-}" != 'KEEP_PUSH_URL' ] && __modify_submodules_push_url
+  [ "${1:-}" = '--keep-push-url' ] || __modify_submodules_push_url
 }
 
 __modify_submodules_push_url() {
