@@ -174,6 +174,20 @@ teardown() {
   [ "$(git remote -vv show | grep -e 'https://github.com.*(push)' | wc -l)" -eq 1 ]
 }
 
+#@test 'recurse option should call script in submodule' {
+  #make_repo_with_submodule
+  #git submodule update --init
+  #local submodule=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  #local script_name="$(basename "$0")"
+  #printf 'echo "MYARGS: $@"; exit 1' > "$submodule/$script_name"
+  #install() {
+    #printf 'fake install function\n'
+  #}
+  #run __main -r install
+  #[ "$status" -eq 0 ]
+  #[ $(echo "${lines[@]}" | grep 'MYARGS: -r install' | wc -l) -eq 1 ]
+#}
+
 @test 'install operation should fail if function install() is not defined' {
   run __main install
   [ "$status" -eq 1 ]

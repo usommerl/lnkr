@@ -6,7 +6,6 @@ set -o pipefail
 set -o errtrace
 set -o functrace
 
-readonly ARGV="$@"
 readonly REPO_ROOT="$(readlink -f "$(git rev-parse --show-toplevel)")"
 readonly REPO_NAME="$(basename "$REPO_ROOT")"
 readonly JOURNAL_FILENAME="$(printf "%s.journal" "${REPO_ROOT#'/'}" | tr '/' '%')"
@@ -14,6 +13,8 @@ readonly JOURNAL_DIRECTORY="${XDG_DATA_HOME:-$HOME/.local/share}/lnkr"
 readonly JOURNAL="$JOURNAL_DIRECTORY/$JOURNAL_FILENAME"
 readonly ACTION_LINK='LNK'
 readonly ACTION_BACKUP='BAK'
+readonly RECURSE_SWITCH_SHORT='-r'
+readonly RECURSE_SWITCH_LONG='--recurse-submodules'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
 readonly LOG_TO_SYSLOG="$(command -v logger)"
@@ -75,19 +76,34 @@ __modify_submodules_push_url() {
     fi'
 }
 
+__parse_args() {
+  while [ $# -ge 1 ]; do
+    case "$1" in
+      $RECURSE_SWITCH_SHORT | $RECURSE_SWITCH_LONG)
+        readonly RECURSE=true
+        ;;
+      $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
+        readonly HELP=true
+        ;;
+      install | remove)
+        readonly OPERATION="$1"
+        ;;
+      *)
+        readonly UNKNOWN_ARG=true
+        ;;
+    esac
+    shift
+  done
+}
+
 __main() {
-  case "${1:-}" in
-    install | remove)
-      __operation "$1"
-      ;;
-    $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
-      __print_help
-      ;;
-    *)
-      __print_help
-      exit 1
-      ;;
-  esac
+  __parse_args "$@"
+  if [[ -n "${UNKNOWN_ARG:-}" || -n "${HELP:-}" || -z "${OPERATION:-}" ]]; then
+    __print_help
+    [ -n "${HELP:-}" ] && exit 0 || exit 1
+  fi
+  __operation "$OPERATION"
+  [ -n "${RECURSE:-}" ] && __recurse_operation "$@" || true
 }
 
 __operation() {
@@ -101,6 +117,11 @@ __operation() {
     fail "Function $callback is not defined"
   fi
   info "$operation finished"
+}
+
+__recurse_operation() {
+  local script_name="$(basename "$0")"
+  git submodule foreach "[ -e \"$script_name\" ] && sh $script_name $*; exit 0"
 }
 
 __remove() {
@@ -243,12 +264,16 @@ __print_help() {
   local indent2='      %s\n'
   printf '\n'
   printf "SYNOPSIS: ${script_name} [OPTIONS] <install|remove>\n\n"
+  printf "$indent1" "${RECURSE_SWITCH_SHORT}, ${RECURSE_SWITCH_LONG}"
+  printf "$indent2" "Checks all git submodules whether they contain a $script_name"
+  printf "$indent2" "file and executes them with the same arguments."
+  printf '\n'
   printf "$indent1" "${HELP_SWITCH_SHORT}, ${HELP_SWITCH_LONG}"
-  printf "$indent2" "Prints this help text"
+  printf "$indent2" "Prints this help text."
   printf '\n'
 }
 
 [ -n "${LNKR_LIB_TEST:-}" ] && return
 
-__main "$ARGV"
+__main "$@"
 exit 0
