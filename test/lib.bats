@@ -20,19 +20,19 @@ teardown() {
 
 @test '__main should print help if no argument is provided' {
   run __main
-  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
+  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTIONS] <install|remove>" ]
   [ "$status" -eq 1 ]
 }
 
 @test '__main should print help if unknown argument is provided' {
   run __main --wrong-argument
-  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
+  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTIONS] <install|remove>" ]
   [ "$status" -eq 1 ]
 }
 
 @test '__main should print help when help switch is provided' {
   run __main --help
-  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTION]" ]
+  [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTIONS] <install|remove>" ]
   [ "$status" -eq 0 ]
 }
 
@@ -175,7 +175,7 @@ teardown() {
 }
 
 @test 'install operation should fail if function install() is not defined' {
-  run __main --install
+  run __main install
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep 'install.*not defined' | wc -l) -eq 1 ]
 }
@@ -184,7 +184,7 @@ teardown() {
   install() {
     printf 'fake install function\n'
   }
-  run __main --install
+  run __main install
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep 'fake install' | wc -l) -eq 1 ]
 }
@@ -194,9 +194,9 @@ teardown() {
     link "$TESTSPACE/file" 'link'
   }
   touch "$TESTSPACE/file"
-  run __main --install
+  run __main install
   [ $(cat "$TEST_JOURNAL" | wc -l) -gt 0 ]
-  run __main --install
+  run __main install
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep -i 'journal.*not empty' | wc -l) -eq 1 ]
 }
@@ -208,13 +208,13 @@ teardown() {
   post_remove_hook() {
     printf 'post_remove\n'
   }
-  run __main --remove
+  run __main remove
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep 'pre_remove.*post_remove' | wc -l) -eq 1 ]
 }
 
 @test 'remove operation should warn if journal is empty' {
-  run __main --remove
+  run __main remove
   [ "$status" -eq 0 ]
   [ $(echo "${lines[@]}" | grep -i 'journal.*no entries' | wc -l) -eq 1 ]
 }
@@ -225,7 +225,7 @@ teardown() {
   printf 'file.linked\n' > "$TESTSPACE/file"
   run link "$TESTSPACE/file" $linkname
   [ $(cat "$TEST_JOURNAL" | wc -l) -eq 2 ]
-  run __main --remove
+  run __main remove
   [ "$status" -eq 0 ]
   [ $(grep 'file.orig' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
   [ $(cat "$TEST_JOURNAL" | wc -l) -eq 0 ]
@@ -237,7 +237,7 @@ teardown() {
   printf 'file.linked\n' > "$TESTSPACE/file"
   run link "$TESTSPACE/file" $linkname
   rm "$TESTSPACE/$linkname" && printf 'file.new\n' > "$TESTSPACE/$linkname"
-  run __main --remove
+  run __main remove
   [ "$status" -eq 0 ]
   [ $(grep 'file.new' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
   [ $(grep 'BAK' "$TEST_JOURNAL" | wc -l) -eq 1 ]
@@ -249,7 +249,7 @@ teardown() {
   printf 'file.linked\n' > "$TESTSPACE/file"
   run link "$TESTSPACE/file" $linkname
   rm -v $TESTSPACE/$linkname.backup-*
-  run __main --remove
+  run __main remove
   [ "$status" -eq 0 ]
   [ ! -f "$TESTSPACE/$linkname" ]
   [ $(echo "${lines[@]}" | grep -i 'backup.*does not exist' | wc -l) -eq 1 ]
@@ -261,7 +261,7 @@ teardown() {
   printf 'file.linked\n' > "$TESTSPACE/file"
   run link "$TESTSPACE/file" $linkname
   stub rm "Unkown rm error" "1"
-  run __main --remove
+  run __main remove
   [ "$status" -eq 0 ]
   [ -f "$TESTSPACE/$linkname" ]
   [ $(echo "${lines[@]}" | grep -i 'Unkown rm error' | wc -l) -eq 1 ]
@@ -275,7 +275,7 @@ teardown() {
   printf 'file.linked\n' > "$TESTSPACE/file"
   run link "$TESTSPACE/file" $linkname
   stub mv "Unkown mv error" "1"
-  run __main --remove
+  run __main remove
   [ "$status" -eq 0 ]
   [ ! -f "$TESTSPACE/$linkname" ]
   [ $(echo "${lines[@]}" | grep -i 'Unkown mv error' | wc -l) -eq 1 ]

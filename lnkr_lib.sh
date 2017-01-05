@@ -5,6 +5,7 @@ set -o nounset
 set -o errtrace
 set -o functrace
 
+readonly ARGV="$@"
 readonly REPO_ROOT="$(readlink -f "$(git rev-parse --show-toplevel)")"
 readonly REPO_NAME="$(basename "$REPO_ROOT")"
 readonly JOURNAL_FILENAME="$(printf "%s.journal" "${REPO_ROOT#'/'}" | tr '/' '%')"
@@ -12,10 +13,6 @@ readonly JOURNAL_DIRECTORY="${XDG_DATA_HOME:-$HOME/.local/share}/lnkr"
 readonly JOURNAL="$JOURNAL_DIRECTORY/$JOURNAL_FILENAME"
 readonly ACTION_LINK='LNK'
 readonly ACTION_BACKUP='BAK'
-readonly INSTALL_SWITCH_SHORT='-i'
-readonly INSTALL_SWITCH_LONG='--install'
-readonly REMOVE_SWITCH_SHORT='-r'
-readonly REMOVE_SWITCH_LONG='--remove'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
 readonly LOG_TO_SYSLOG="$(command -v logger)"
@@ -79,11 +76,8 @@ __modify_submodules_push_url() {
 
 __main() {
   case "${1:-}" in
-    $REMOVE_SWITCH_SHORT | $REMOVE_SWITCH_LONG)
-      __operation 'Remove'
-      ;;
-    $INSTALL_SWITCH_SHORT | $INSTALL_SWITCH_LONG)
-      __operation 'Install'
+    install | remove)
+      __operation "$1"
       ;;
     $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
       __print_help
@@ -96,15 +90,16 @@ __main() {
 }
 
 __operation() {
-  local callback="__$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+  local callback="__$1"
+  local operation="${1^}"
   printf '\n'
-  info "$1 repository $REPO_NAME"
+  info "$operation repository $REPO_NAME"
   if declare -F "$callback" &> /dev/null; then
     $callback
   else
     fail "Function $callback is not defined"
   fi
-  info "$1 finished"
+  info "$operation finished"
 }
 
 __remove() {
@@ -246,21 +241,13 @@ __print_help() {
   local indent1='  %s\n\n'
   local indent2='      %s\n'
   printf '\n'
-  printf "SYNOPSIS: ${script_name} [OPTION]\n\n"
-  printf "$indent1" "${INSTALL_SWITCH_SHORT}, ${INSTALL_SWITCH_LONG}"
-  printf "$indent2" "Executes the install procedure defined in function install."
-  printf "$indent2" "Symbolic links that are created with function link won't"
-  printf "$indent2" "overwrite existing files. The link function creates backups"
-  printf "$indent2" "that will be restored automatically if you run this script"
-  printf "$indent2" "with the ${REMOVE_SWITCH_LONG} option."
-  printf '\n'
-  printf "$indent1" "${REMOVE_SWITCH_SHORT}, ${REMOVE_SWITCH_LONG}"
-  printf "$indent2" "Removes symlinks and restores all backups that where"
-  printf "$indent2" "made during a previous install."
+  printf "SYNOPSIS: ${script_name} [OPTIONS] <install|remove>\n\n"
+  printf "$indent1" "${HELP_SWITCH_SHORT}, ${HELP_SWITCH_LONG}"
+  printf "$indent2" "Prints this help text"
   printf '\n'
 }
 
 [ -n "${LNKR_LIB_TEST:-}" ] && return
 
-__main "$@"
+__main "$ARGV"
 exit 0
