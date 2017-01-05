@@ -147,21 +147,30 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
-@test 'setup_submodules should initialize submodules and modify push url' {
+@test 'setup_submodules should initialize submodules' {
   make_repo_with_submodule
   run setup_submodules
-  local submodule_dir=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
-  cd $submodule_dir
-  [ "$(ls -1 . | wc -l)" -gt 0 ]
+  local submodule=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  [ "$(ls -1 "$submodule" | wc -l)" -gt 0 ]
+}
+
+@test 'setup_submodules should modify push url' {
+  make_repo_with_submodule
+  git submodule update --init
+  local submodule=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  git -C "$submodule" remote set-url --push origin https://github.com/user/repo.git
+  run setup_submodules
+  cd "$submodule"
   [ "$(git remote -vv show | grep -e 'git@github.com.*(push)' | wc -l)" -eq 1 ]
 }
 
-@test 'setup_submodules should not modify push url if it is requested' {
+@test 'setup_submodules should not modify push url if it is explicitly requested' {
   make_repo_with_submodule
+  git submodule update --init
+  local submodule=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  git -C "$submodule" remote set-url --push origin https://github.com/user/repo.git
   run setup_submodules --keep-push-url
-  local submodule_dir=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
-  cd $submodule_dir
-  [ "$(ls -1 . | wc -l)" -gt 0 ]
+  cd "$submodule"
   [ "$(git remote -vv show | grep -e 'https://github.com.*(push)' | wc -l)" -eq 1 ]
 }
 

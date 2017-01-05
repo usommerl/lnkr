@@ -1,4 +1,5 @@
 readonly TESTSPACE=$BATS_TEST_DIRNAME/testspace
+readonly BUILDSPACE=$BATS_TEST_DIRNAME/buildspace
 readonly LNKR_REPO_ROOT=$(git rev-parse --show-toplevel)
 readonly LIB_FILENAME=lnkr_lib.sh
 readonly LOCKFILE=lnkr.lock
@@ -20,7 +21,10 @@ make_testspace() {
 }
 
 rm_testspace() {
-  [ -d "$TESTSPACE" ] && cd "$LNKR_REPO_ROOT" && rm -rf "$TESTSPACE"
+  for directory in "$TESTSPACE" "$BUILDSPACE"; do
+    [ -d "$directory" ] && cd "$LNKR_REPO_ROOT" && rm -rf "$directory" || true
+  done
+  unset directory
 }
 
 rm_cache() {
@@ -31,14 +35,29 @@ rm_journal() {
   rm -f "$TEST_JOURNAL"
 }
 
-make_repo_with_submodule() {
-  rm_testspace
-  git clone https://github.com/usommerl/configuration-bash.git $TESTSPACE
-  cp "$LNKR_REPO_ROOT/$LIB_FILENAME" "$TESTSPACE/"
-  cd "$TESTSPACE"
-}
-
 assert_lib_exists() {
   local version=$(head -n 1 "$TESTSPACE/$LOCKFILE") 2>&-
   [ -e "$CACHE_DIR/${LIB_FILENAME/%.sh/_$version.sh}" ]
+}
+
+make_repo_with_submodule() {
+  rm_testspace
+  for repo in submodule toplevel; do
+    local path="$BUILDSPACE/$repo"
+    mkdir -p "$path" && git -C "$path" init
+    case "$repo" in
+      submodule)
+        echo $repo >> "$path/$repo" && git -C "$path" add "$repo"
+        ;;
+      toplevel)
+        git -C "$path" submodule add "file://$BUILDSPACE/submodule"
+        ;;
+    esac
+    git -C "$path" commit -m 'message'
+    mv "$path" "$path.tmp"
+    git -C "$BUILDSPACE" clone --bare "$path.tmp" "$repo"
+    rm -rf "$path.tmp"
+  done
+  git clone --no-hardlinks "file://$BUILDSPACE/toplevel" "$TESTSPACE"
+  cd "$TESTSPACE"
 }
