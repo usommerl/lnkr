@@ -163,7 +163,7 @@ teardown() {
 @test 'setup_submodules should modify push url' {
   make_repo_with_submodule
   git submodule update --init
-  local submodule=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  local submodule="$(git submodule status | head -n 1 | cut -d ' ' -f 3)"
   git -C "$submodule" remote set-url --push origin https://github.com/user/repo.git
   run setup_submodules
   cd "$submodule"
@@ -172,9 +172,7 @@ teardown() {
 
 @test 'setup_submodules should not modify push url if it is explicitly requested' {
   make_repo_with_submodule
-  git submodule update --init
-  local submodule=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
-  git -C "$submodule" remote set-url --push origin https://github.com/user/repo.git
+  local submodule="$(git submodule status | head -n 1 | cut -d ' ' -f 3)"
   run setup_submodules --keep-push-url
   cd "$submodule"
   [ "$(git remote -vv show | grep -e 'https://github.com.*(push)' | wc -l)" -eq 1 ]
@@ -183,7 +181,7 @@ teardown() {
 @test 'recurse option should call script in submodule' {
   make_repo_with_submodule
   git submodule update --init
-  local submodule=$(git submodule status | head -n 1 | cut -d ' ' -f 3)
+  local submodule="$(git submodule status | head -n 1 | cut -d ' ' -f 3)"
   local script_name="$(basename "$0")"
   printf 'echo "MYARGS: $@"; exit 1' > "$submodule/$script_name"
   install() {
