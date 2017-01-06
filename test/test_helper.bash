@@ -36,8 +36,7 @@ rm_journal() {
 }
 
 assert_lib_exists() {
-  local version=$(head -n 1 "$TESTSPACE/$LOCKFILE") 2>&-
-  [ -e "$CACHE_DIR/${LIB_FILENAME/%.sh/_$version.sh}" ]
+  [ "$(ls -l1 "$CACHE_DIR"/lnkr_lib_"${1:-}"*.sh | wc -l)" -eq 1 ]
 }
 
 make_repo_with_submodule() {
