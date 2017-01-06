@@ -7,8 +7,8 @@ setup() {
   BATS_TEST_SKIPPED=''
   readonly LNKR_LIB_TEST=true
   make_testspace && cd $TESTSPACE && git init
-  cp $LNKR_REPO_ROOT/$LIB_FILENAME ./lnkr_lib_v0.0.0-test.sh
-  source ./lnkr_lib_v0.0.0-test.sh
+  cp $LNKR_REPO_ROOT/$LIB_FILENAME .
+  source "$LIB_FILENAME"
 }
 
 teardown() {
@@ -38,7 +38,7 @@ teardown() {
 
 @test '__main should print version if version switch is provided' {
   run __main --version
-  [ "${lines[0]}" = "lnkr v0.0.0-test" ]
+  [ $(echo "${lines[0]}" | grep 'lnkr.*' | wc -l) -eq 1 ]
   [ "$status" -eq 0 ]
 }
 
