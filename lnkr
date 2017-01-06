@@ -14,8 +14,9 @@ install() {
   fail 'You need to define your own install function!'
 }
 
-#                 Do not alter bootstrap code below this line                 #
 # --------------------------------------------------------------------------- #
+#                Do not alter or insert code below this line.                 #
+#        See https://github.com/usommerl/lnkr for further information.        #
 
 __cache_directory() {
   local directory="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
