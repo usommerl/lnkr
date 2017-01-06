@@ -199,7 +199,7 @@ __remove_link() {
 
 __restore_bakup() {
   local backup_location="$(__extract_field "$2" "1")"
-  local original_location="$(echo "$backup_location" | sed 's/\.backup.*$//')"
+  local original_location="${backup_location%.backup*}"
   if [ -e "$original_location" ]; then
     warn "Could not restore backup: Path '$original_location' is occupied"
     remove_journal_entry='false'
