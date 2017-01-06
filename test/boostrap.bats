@@ -19,8 +19,9 @@ teardown() {
 }
 
 @test '__bootstrap should download library if it does not exist' {
-  run $lnkr --help
+  run $lnkr --version
   [ "$status" -eq 0 ]
+  [ "${lines[0]}" = "lnkr $LNKR_VERSION" ]
   assert_lib_exists "$LNKR_VERSION"
 }
 
