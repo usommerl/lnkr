@@ -15,6 +15,8 @@ readonly ACTION_LINK='LNK'
 readonly ACTION_BACKUP='BAK'
 readonly RECURSE_SWITCH_SHORT='-r'
 readonly RECURSE_SWITCH_LONG='--recurse-submodules'
+readonly VERSION_SWITCH_SHORT='-v'
+readonly VERSION_SWITCH_LONG='--version'
 readonly HELP_SWITCH_SHORT='-h'
 readonly HELP_SWITCH_LONG='--help'
 readonly LOG_TO_SYSLOG="$(command -v logger)"
@@ -82,14 +84,17 @@ __parse_args() {
       $RECURSE_SWITCH_SHORT | $RECURSE_SWITCH_LONG)
         readonly RECURSE=true
         ;;
+      $VERSION_SWITCH_SHORT | $VERSION_SWITCH_LONG)
+        readonly PRINT_VERSION=true
+        ;;
       $HELP_SWITCH_SHORT | $HELP_SWITCH_LONG)
-        readonly HELP=true
+        readonly PRINT_HELP=true
         ;;
       install | remove)
         readonly OPERATION="$1"
         ;;
       *)
-        readonly UNKNOWN_ARG=true
+        readonly PARSE_ERROR=true
         ;;
     esac
     shift
@@ -98,9 +103,10 @@ __parse_args() {
 
 __main() {
   __parse_args "$@"
-  if [[ -n "${UNKNOWN_ARG:-}" || -n "${HELP:-}" || -z "${OPERATION:-}" ]]; then
+  [ -n "${PRINT_VERSION:-}" ] && __print_version && exit 0
+  if [[ -n "${PARSE_ERROR:-}" || -n "${PRINT_HELP:-}" || -z "${OPERATION:-}" ]]; then
     __print_help
-    [ -n "${HELP:-}" ] && exit 0 || exit 1
+    [ -n "${PRINT_HELP:-}" ] && exit 0 || exit 1
   fi
   __operation "$OPERATION"
   [ -n "${RECURSE:-}" ] && __recurse_operation "$@" || true
@@ -268,9 +274,22 @@ __print_help() {
   printf "$indent2" "Checks all git submodules whether they contain a $script_name"
   printf "$indent2" "file and executes them with the same arguments."
   printf '\n'
-  printf "$indent1" "${HELP_SWITCH_SHORT}, ${HELP_SWITCH_LONG}"
-  printf "$indent2" "Prints this help text."
+  printf "$indent1" "${VERSION_SWITCH_SHORT}, ${VERSION_SWITCH_LONG}"
+  printf "$indent2" "Print version information"
   printf '\n'
+  printf "$indent1" "${HELP_SWITCH_SHORT}, ${HELP_SWITCH_LONG}"
+  printf "$indent2" "Print this help text"
+  printf '\n'
+}
+
+__version() {
+  local file="${BASH_SOURCE[0]}"
+  local strip_prefix="${file##*lnkr_lib_}"
+  echo "${strip_prefix%%.sh}"
+}
+
+__print_version() {
+  printf 'lnkr %s\n' "$(__version)"
 }
 
 [ -n "${LNKR_LIB_TEST:-}" ] && return

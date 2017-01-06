@@ -7,8 +7,8 @@ setup() {
   BATS_TEST_SKIPPED=''
   readonly LNKR_LIB_TEST=true
   make_testspace && cd $TESTSPACE && git init
-  cp $LNKR_REPO_ROOT/$LIB_FILENAME .
-  source $LIB_FILENAME
+  cp $LNKR_REPO_ROOT/$LIB_FILENAME ./lnkr_lib_v0.0.0-test.sh
+  source ./lnkr_lib_v0.0.0-test.sh
 }
 
 teardown() {
@@ -30,9 +30,15 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
-@test '__main should print help when help switch is provided' {
+@test '__main should print help if help switch is provided' {
   run __main --help
   [ "${lines[0]}" = "SYNOPSIS: $(basename $0) [OPTIONS] <install|remove>" ]
+  [ "$status" -eq 0 ]
+}
+
+@test '__main should print version if version switch is provided' {
+  run __main --version
+  [ "${lines[0]}" = "lnkr v0.0.0-test" ]
   [ "$status" -eq 0 ]
 }
 
