@@ -31,7 +31,7 @@ __latest_version() {
     local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
     local response="$( (curl -Lfs "$url" || wget -qO - "$url") 2>&- )"
     local tag_name="$(echo "$response" | grep 'tag_name' | cut -d '"' -f 4)"
-    echo "$tag_name" | tee "$cache"
+    echo "$tag_name" | tee "$cache" 2>&-
   fi
 }
 
