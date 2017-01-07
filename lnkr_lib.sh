@@ -56,7 +56,7 @@ link() {
   [ -e "$link_location" ] && __create_backup "$link_location"
   eval "${sudo_link:-}mkdir -p $(dirname "$link_location")"
   eval "${sudo_link:-}ln -sfT $link_target $link_location" &&
-    info "Create link: $link_location -> $link_target" &&
+    info "Create link $link_location -> $link_target" &&
       __record_link "$link_target" "$link_location"
 }
 
@@ -115,14 +115,13 @@ __main() {
 __operation() {
   local callback="__$1"
   local operation="${1^}"
-  printf '\n'
-  info "$operation repository $REPOSITORY_NAME using $(__version)"
+  info "$operation repository $REPOSITORY_NAME using lnkr $(__version)"
   if declare -F "$callback" &> /dev/null; then
     $callback
   else
     fail "Function $callback is not defined"
   fi
-  info "$operation finished"
+  info "$operation finished successfully" && printf '\n'
 }
 
 __recurse_operation() {
@@ -154,7 +153,7 @@ __create_backup() {
   local link_location=$1
   local backup_location="${link_location}.backup-$(__timestamp)"
   [ ! -e "$backup_location" ] && eval "${sudo_link:-}mv -n $link_location $backup_location" &&
-    info "Create backup: $link_location -> $backup_location" &&
+    warn "Create backup $link_location -> $backup_location" &&
       __record_backup "$backup_location" || fail "Could not create backup"
 }
 
@@ -193,7 +192,7 @@ __remove_link() {
     warn "Could not delete link: '$link_location' is not a symlink"
   else
     eval "${1:-}rm $link_location" &&
-      info "Deleted link: '$link_location'" ||
+      info "Delete link $link_location" ||
         remove_journal_entry='false'
   fi
 }
@@ -208,7 +207,7 @@ __restore_bakup() {
     warn "Could not restore backup: '$backup_location' does not exist"
   else
     eval "${1:-}mv -n $backup_location $original_location" &&
-      info "Restored backup: '$backup_location' -> '$original_location'" ||
+      info "Restore backup $backup_location -> $original_location" ||
         remove_journal_entry='false'
   fi
 }
