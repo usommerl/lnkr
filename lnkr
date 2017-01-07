@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 
 install() {
-  info
-  info 'Define method install and use library function link'
-  info 'to create symlinks to your configuration files.'
-  info
-  info 'Example:'
+  info 'Define method install and use library function link to'
+  info 'create symlinks to your configuration files. Example:'
   info
   info 'function install() {'
   info '  link .bashrc ~/.bashrc'
@@ -37,12 +34,14 @@ __latest_version() {
 }
 
 __bootstrap() {
-  local src='lnkr_lib.sh'
-  local ver="${LNKR_VERSION:-$(__latest_version)}"
-  local lib="$(__cache_directory)/${src/%.sh/_$ver.sh}"
-  local url="https://raw.githubusercontent.com/usommerl/lnkr/$ver/$src"
-  [ ! -e "$lib" ] && (curl -Lfso "$lib" "$url" || wget -qO "$lib" "$url") 2>&-
-  [ -e "$lib" ] && source "$lib" "$@"
+  local file='lnkr_lib.sh'
+  local version="${LNKR_VERSION:-$(__latest_version)}"
+  local library="$(__cache_directory)/${file/%.sh/_$version.sh}"
+  local url="https://raw.githubusercontent.com/usommerl/lnkr/$version/$file"
+  if [ ! -e "$library" ] || [ -n "${SKIP_LNKR_CACHE:-}" ]; then
+    (curl -Lfso "$library" "$url" || wget -qO "$library" "$url") 2>&-
+  fi
+  [ -e "$library" ] && source "$library" "$@"
   echo 'Bootstrap failed'; exit 1
 }
 
