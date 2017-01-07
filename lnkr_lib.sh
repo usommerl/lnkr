@@ -126,7 +126,7 @@ __operation() {
 
 __recurse_operation() {
   local script_name="$(basename "$0")"
-  git submodule foreach -q "[ -e \"$script_name\" ] && ./$script_name $*; exit 0"
+  git submodule foreach -q "[ -e \"$script_name\" ] && bash $script_name $*; exit 0"
 }
 
 __remove() {
