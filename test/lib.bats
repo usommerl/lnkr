@@ -251,7 +251,7 @@ teardown() {
   run __main remove
   [ "$status" -eq 0 ]
   [ $(grep 'file.orig' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
-  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 0 ]
+  [ ! -e "$TEST_JOURNAL" ]
 }
 
 @test 'remove operation should not remove new file at recorded link location' {
@@ -276,7 +276,7 @@ teardown() {
   [ "$status" -eq 0 ]
   [ ! -f "$TESTSPACE/$linkname" ]
   [ $(echo "${lines[@]}" | grep -i 'backup.*does not exist' | wc -l) -eq 1 ]
-  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 0 ]
+  [ ! -e "$TEST_JOURNAL" ]
 }
 
 @test 'remove operation should not delete journal entry if link removal fails' {

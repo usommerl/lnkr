@@ -168,6 +168,7 @@ __revert_recorded_actions() {
     [ "$remove_journal_entry" == 'true' ] && __remove_journal_entry "$line"
   done < <(tac "$JOURNAL")
   unset line remove_journal_entry
+  [ ! -s "$JOURNAL" ] && rm -f "$JOURNAL"
 }
 
 __revert_action() {
