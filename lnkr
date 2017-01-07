@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 install() {
+  info
   info 'Define method install and use library function link to'
   info 'create symlinks to your configuration files. Example:'
   info
