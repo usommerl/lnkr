@@ -116,8 +116,7 @@ __operation() {
   local callback="__$1"
   local operation="${1^}"
   printf '\n'
-  info "$operation repository $REPOSITORY_NAME"
-  info "Using library $(__version)"
+  info "$operation repository $REPOSITORY_NAME using $(__version)"
   if declare -F "$callback" &> /dev/null; then
     $callback
   else
