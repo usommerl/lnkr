@@ -67,7 +67,7 @@ setup_submodules() {
 }
 
 __modify_submodules_push_url() {
-  git submodule foreach '
+  git submodule -q foreach '
     pattern="^.*https:\/\/(github.com)\/(.*\.git).*"
     orgURL=$(git remote -v show | grep origin | grep push)
     newURL=$(echo $orgURL | sed -r "/$pattern/{s/$pattern/git@\1:\2/;q0}; /$pattern/!{q1}")
@@ -127,7 +127,7 @@ __operation() {
 
 __recurse_operation() {
   local script_name="$(basename "$0")"
-  git submodule foreach "[ -e \"$script_name\" ] && sh $script_name $*; exit 0"
+  git submodule foreach -q "[ -e \"$script_name\" ] && ./$script_name $*; exit 0"
 }
 
 __remove() {
