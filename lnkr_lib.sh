@@ -6,9 +6,9 @@ set -o pipefail
 set -o errtrace
 set -o functrace
 
-readonly REPO_ROOT="$(readlink -f "$(git rev-parse --show-toplevel)")"
-readonly REPO_NAME="$(basename "$REPO_ROOT")"
-readonly JOURNAL_FILENAME="$(printf "%s.journal" "${REPO_ROOT#'/'}" | tr '/' '%')"
+readonly REPOSITORY_ROOT="$(readlink -f "$(git rev-parse --show-toplevel)")"
+readonly REPOSITORY_NAME="$(basename "$REPOSITORY_ROOT")"
+readonly JOURNAL_FILENAME="$(printf "%s.journal" "${REPOSITORY_ROOT#'/'}" | tr '/' '%')"
 readonly JOURNAL_DIRECTORY="${XDG_DATA_HOME:-$HOME/.local/share}/lnkr"
 readonly JOURNAL="$JOURNAL_DIRECTORY/$JOURNAL_FILENAME"
 readonly ACTION_LINK='LNK'
@@ -116,7 +116,7 @@ __operation() {
   local callback="__$1"
   local operation="${1^}"
   printf '\n'
-  info "$operation repository $REPO_NAME"
+  info "$operation repository $REPOSITORY_NAME"
   if declare -F "$callback" &> /dev/null; then
     $callback
   else
@@ -142,7 +142,7 @@ __remove() {
 
 __install() {
   if [ -s "$JOURNAL" ]; then
-    fail "Journal is not empty. Repository $REPO_NAME already installed?"
+    fail "Journal is not empty. Repository $REPOSITORY_NAME already installed?"
   elif declare -F install &> /dev/null; then
     install
   else
@@ -160,7 +160,7 @@ __create_backup() {
 
 __revert_recorded_actions() {
   if [ ! -s "$JOURNAL" ]; then
-    warn "Abort remove: Journal contains no entries" && return
+    warn "Journal contains no entries. Nothing to remove." && return
   fi
   while read -r line; do
     remove_journal_entry='true'
