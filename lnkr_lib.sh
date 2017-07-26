@@ -55,9 +55,9 @@ link() {
   fi
   [ -e "$link_location" ] && __create_backup "$link_location"
   eval "${sudo_link:-}mkdir -p $(dirname "$link_location")"
-  eval "${sudo_link:-}ln -sfT $link_target $link_location" &&
-    info "Create link $link_location -> $link_target" &&
-      __record_link "$link_target" "$link_location"
+  eval "${sudo_link:-}ln -sfT $link_target $link_location" \
+    && info "Create link $link_location -> $link_target" \
+    && __record_link "$link_target" "$link_location"
 }
 
 setup_submodules() {
@@ -116,7 +116,7 @@ __operation() {
   local callback="__$1"
   local operation="${1^}"
   info "$operation repository $REPOSITORY_NAME using lnkr $(__version)"
-  if declare -F "$callback" &> /dev/null; then
+  if declare -F "$callback" &>/dev/null; then
     $callback
   else
     fail "Function $callback is not defined"
@@ -130,19 +130,19 @@ __recurse_operation() {
 }
 
 __remove() {
-  if declare -F pre_remove_hook &> /dev/null; then
-      pre_remove_hook
+  if declare -F pre_remove_hook &>/dev/null; then
+    pre_remove_hook
   fi
   __revert_recorded_actions
-  if declare -F post_remove_hook &> /dev/null; then
-      post_remove_hook
+  if declare -F post_remove_hook &>/dev/null; then
+    post_remove_hook
   fi
 }
 
 __install() {
   if [ -s "$JOURNAL" ]; then
     fail "Journal is not empty. Repository $REPOSITORY_NAME already installed?"
-  elif declare -F install &> /dev/null; then
+  elif declare -F install &>/dev/null; then
     install
   else
     fail 'Function install() is not defined'
@@ -152,9 +152,9 @@ __install() {
 __create_backup() {
   local link_location=$1
   local backup_location="${link_location}.backup-$(__timestamp)"
-  [ ! -e "$backup_location" ] && eval "${sudo_link:-}mv -n $link_location $backup_location" &&
-    warn "Create backup $link_location -> $backup_location" &&
-      __record_backup "$backup_location" || fail "Could not create backup"
+  [ ! -e "$backup_location" ] && eval "${sudo_link:-}mv -n $link_location $backup_location" \
+    && warn "Create backup $link_location -> $backup_location" \
+    && __record_backup "$backup_location" || fail "Could not create backup"
 }
 
 __revert_recorded_actions() {
@@ -191,9 +191,9 @@ __remove_link() {
   if [ ! -L "$link_location" ]; then
     warn "Could not delete link: '$link_location' is not a symlink"
   else
-    eval "${1:-}rm $link_location" &&
-      info "Delete link $link_location" ||
-        remove_journal_entry='false'
+    eval "${1:-}rm $link_location" \
+      && info "Delete link $link_location" \
+      || remove_journal_entry='false'
   fi
 }
 
@@ -206,9 +206,9 @@ __restore_bakup() {
   elif [ ! -e "$backup_location" ]; then
     warn "Could not restore backup: '$backup_location' does not exist"
   else
-    eval "${1:-}mv -n $backup_location $original_location" &&
-      info "Restore backup $backup_location -> $original_location" ||
-        remove_journal_entry='false'
+    eval "${1:-}mv -n $backup_location $original_location" \
+      && info "Restore backup $backup_location -> $original_location" \
+      || remove_journal_entry='false'
   fi
 }
 
@@ -238,8 +238,8 @@ __record_link() {
 __journal_base() {
   [ -n "${sudo_link:-}" ] && local user='root' || local user="$(id -un)"
   local sha="$(echo "$(__timestamp) $user $1" | sha1sum | cut -d " " -f 1)"
-  printf "%s\t%s\t" "$sha" "$user" >> "$JOURNAL"
-  printf "$1\n" >> "$JOURNAL"
+  printf "%s\t%s\t" "$sha" "$user" >>"$JOURNAL"
+  printf "$1\n" >>"$JOURNAL"
 }
 
 __logger_base() {
