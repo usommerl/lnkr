@@ -1,21 +1,5 @@
 #!/usr/bin/env bash
 
-install() {
-  info
-  info 'Define method install and use library function link to'
-  info 'create symlinks to your configuration files. Example:'
-  info
-  info 'function install() {'
-  info '  link .bashrc ~/.bashrc'
-  info '}'
-  info
-  fail 'You need to define your own install function!'
-}
-
-# --------------------------------------------------------------------------- #
-#                Do not alter or insert code below this line.                 #
-#        See https://github.com/usommerl/lnkr for further information.        #
-
 __cache_directory() {
   local directory="${XDG_CACHE_HOME:-$HOME/.cache}/lnkr"
   mkdir -p "$directory" &>/dev/null && echo "$directory"
@@ -28,7 +12,7 @@ __latest_version() {
     head -n 1 "$cache" 2>&-
   else
     local url='https://api.github.com/repos/usommerl/lnkr/releases/latest'
-    local response="$( (curl -Lfs "$url" || wget -qO - "$url") 2>&- )"
+    local response="$( (curl -Lfs "$url" || wget -qO - "$url") 2>&- || echo '' )"
     local tag_name="$(echo "$response" | grep 'tag_name' | cut -d '"' -f 4)"
     echo "$tag_name" | tee "$cache" 2>&-
   fi

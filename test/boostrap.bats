@@ -6,8 +6,9 @@ load stub
 setup() {
   make_testspace
   git init
-  cp $LNKR_REPO_ROOT/lnkr $TESTSPACE
-  export lnkr=$TESTSPACE/lnkr
+  cp $LNKR_REPO_ROOT/lnkr_bootstrap.sh $TESTSPACE
+  export lnkr=$TESTSPACE/lnkr_bootstrap.sh
+  chmod 744 $lnkr
   export LNKR_VERSION='master'
 }
 
