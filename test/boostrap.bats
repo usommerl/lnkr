@@ -5,11 +5,19 @@ load stub
 
 setup() {
   make_testspace
-  git init
-  cp $LNKR_REPO_ROOT/lnkr_bootstrap.sh $TESTSPACE
-  export lnkr=$TESTSPACE/lnkr_bootstrap.sh
+  export lnkr=$TESTSPACE/lnkr
+  cat >$lnkr << EOF
+#!/usr/bin/env bash
+
+install() {
+  info 'Bootstrap test'
+}
+
+source <(curl -Ls https://goo.gl/zo4yfW)
+EOF
   chmod 744 $lnkr
   export LNKR_VERSION='master'
+  git init
 }
 
 teardown() {
@@ -53,20 +61,4 @@ teardown() {
   [ "$output" = "Fake lnkr library" ]
   [ "$status" -eq 254 ]
   assert_lib_exists
-}
-
-@test '__bootstrap should use curl or wget to download library' {
-  stub curl "bash: curl: command not found" 127
-  run $lnkr --help
-  [ "$status" -eq 0 ]
-  [ "${lines[0]}" = "bash: curl: command not found" ]
-  assert_lib_exists
-}
-
-@test '__bootstrap should abort if it is not able to download library' {
-  stub_curl_and_wget
-  run $lnkr --help
-  [ "$status" -eq 1 ]
-  [ "${lines[0]}" = "Bootstrap failed" ]
-  [ "$(ls -1 $CACHE_DIR/*.sh | wc -l)" -eq 0 ]
 }
