@@ -72,9 +72,21 @@ teardown() {
   local timestamp='2016-08-09T2120:36+02:00'
   local linkname='link'
   local linkpath="$TESTSPACE/$linkname"
-  touch $linkpath
+  touch "$linkpath"
   stub date $timestamp
-  run link "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" "$linkname"
+  [ "$status" -eq 0 ]
+  [ "$(ls -l1 ${linkpath}.backup-$timestamp)" ]
+  [ -L $linkpath ]
+}
+
+@test 'link should not fail if target name contains spaces' {
+  local timestamp='2020-03-27T21:53:00+01:00'
+  local linkname='link - with - spaces'
+  local linkpath="$TESTSPACE/$linkname"
+  touch "$linkpath"
+  stub date $timestamp
+  run link "$TESTSPACE/file" "$linkname"
   [ "$status" -eq 0 ]
   [ "$(ls -l1 ${linkpath}.backup-$timestamp)" ]
   [ -L $linkpath ]
@@ -246,7 +258,19 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run link "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" "$linkname"
+  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 2 ]
+  run __main remove
+  [ "$status" -eq 0 ]
+  [ $(grep 'file.orig' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
+  [ ! -e "$TEST_JOURNAL" ]
+}
+
+@test 'remove operation should revert journal entries with names that contain spaces' {
+  local linkname='link - with - spaces'
+  printf 'file.orig\n' > "$TESTSPACE/$linkname"
+  printf 'file.linked\n' > "$TESTSPACE/file"
+  run link "$TESTSPACE/file" "$linkname"
   [ $(cat "$TEST_JOURNAL" | wc -l) -eq 2 ]
   run __main remove
   [ "$status" -eq 0 ]
@@ -258,7 +282,7 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run link "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" "$linkname"
   rm "$TESTSPACE/$linkname" && printf 'file.new\n' > "$TESTSPACE/$linkname"
   run __main remove
   [ "$status" -eq 0 ]
@@ -270,7 +294,7 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run link "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" "$linkname"
   rm -v $TESTSPACE/$linkname.backup-*
   run __main remove
   [ "$status" -eq 0 ]
@@ -282,7 +306,7 @@ teardown() {
 @test 'remove operation should not delete journal entry if link removal fails' {
   local linkname='link'
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run link "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" "$linkname"
   stub rm "Unkown rm error" "1"
   run __main remove
   [ "$status" -eq 0 ]
@@ -296,7 +320,7 @@ teardown() {
   local linkname='link'
   printf 'file.orig\n' > "$TESTSPACE/$linkname"
   printf 'file.linked\n' > "$TESTSPACE/file"
-  run link "$TESTSPACE/file" $linkname
+  run link "$TESTSPACE/file" "$linkname"
   stub mv "Unkown mv error" "1"
   run __main remove
   [ "$status" -eq 0 ]
