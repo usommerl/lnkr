@@ -55,7 +55,7 @@ link() {
   fi
   [ -e "$link_location" ] && __create_backup "$link_location"
   eval "${sudo_link:-}mkdir -p $(dirname "$link_location")"
-  eval "${sudo_link:-}ln -sfT $link_target $link_location" \
+  eval "${sudo_link:-}ln -sfT '$link_target' '$link_location'" \
     && info "Create link $link_location -> $link_target" \
     && __record_link "$link_target" "$link_location"
 }
@@ -152,7 +152,7 @@ __install() {
 __create_backup() {
   local link_location=$1
   local backup_location="${link_location}.backup-$(__timestamp)"
-  [ ! -e "$backup_location" ] && eval "${sudo_link:-}mv -n $link_location $backup_location" \
+  [ ! -e "$backup_location" ] && eval "${sudo_link:-}mv -n '$link_location' '$backup_location'" \
     && warn "Create backup $link_location -> $backup_location" \
     && __record_backup "$backup_location" || fail "Could not create backup"
 }
@@ -191,7 +191,7 @@ __remove_link() {
   if [ ! -L "$link_location" ]; then
     warn "Could not delete link: '$link_location' is not a symlink"
   else
-    eval "${1:-}rm $link_location" \
+    eval "${1:-}rm '$link_location'" \
       && info "Delete link $link_location" \
       || remove_journal_entry='false'
   fi
@@ -206,7 +206,7 @@ __restore_bakup() {
   elif [ ! -e "$backup_location" ]; then
     warn "Could not restore backup: '$backup_location' does not exist"
   else
-    eval "${1:-}mv -n $backup_location $original_location" \
+    eval "${1:-}mv -n '$backup_location' '$original_location'" \
       && info "Restore backup $backup_location -> $original_location" \
       || remove_journal_entry='false'
   fi
