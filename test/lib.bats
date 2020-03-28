@@ -76,8 +76,8 @@ teardown() {
   stub date $timestamp
   run link "$TESTSPACE/file" "$linkname"
   [ "$status" -eq 0 ]
-  [ "$(ls -l1 ${linkpath}.backup-$timestamp)" ]
-  [ -L $linkpath ]
+  [ "$(ls -l1 "${linkpath}.backup-$timestamp")" ]
+  [ -L "$linkpath" ]
 }
 
 @test 'link should not fail if target name contains spaces' {
@@ -88,8 +88,8 @@ teardown() {
   stub date $timestamp
   run link "$TESTSPACE/file" "$linkname"
   [ "$status" -eq 0 ]
-  [ "$(ls -l1 ${linkpath}.backup-$timestamp)" ]
-  [ -L $linkpath ]
+  [ "$(ls -l1 "${linkpath}.backup-$timestamp")" ]
+  [ -L "$linkpath" ]
 }
 
 @test 'link should fail if file with same name as backup file exists' {
@@ -102,7 +102,7 @@ teardown() {
   run link $linktarget $linkname
   [ "$status" -eq 1 ]
   [ $(echo "${lines[@]}" | grep "Could not create backup" | wc -l) -eq 1 ]
-  [ ! -L $linkpath ]
+  [ ! -L "$linkpath" ]
 }
 
 @test 'link should create parent directories if they do not exist' {
@@ -112,7 +112,7 @@ teardown() {
   [ ! -e "$parent_dir" ]
   run link "$TESTSPACE/file" $linkpath
   [ -e "$parent_dir" ]
-  [ -L $linkpath ]
+  [ -L "$linkpath" ]
 }
 
 @test 'link should warn about dead links' {
