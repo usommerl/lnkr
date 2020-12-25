@@ -14,16 +14,16 @@ jobs:
     - name: Setup kcov
       run: |-
         sudo apt install libcurl4-openssl-dev libelf-dev libdw-dev cmake &&
-        wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
-        tar xzf master.tar.gz &&
-        cd kcov-master &&
+        wget https://github.com/SimonKagstrom/kcov/archive/v38.tar.gz &&
+        tar xzf v38.tar.gz &&
+        cd kcov-38 &&
         mkdir build &&
         cd build &&
         cmake .. &&
         make &&
         sudo make install &&
         cd ../.. &&
-        rm -rf kcov-master
+        rm -rf kcov-38
 
     - name: Checkout
       uses: actions/checkout@v2
