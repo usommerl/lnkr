@@ -138,24 +138,22 @@ teardown() {
 }
 
 @test 'sudo function should enable sudo mode for link function' {
-  stub sudo 'Stub sudo command'
-  SUDO_CMD="$BATS_TEST_DIRNAME/stub/sudo"
+  stub_sudo
   local linkname='link'
   touch "$TESTSPACE/$linkname"
   run sudo link "$TESTSPACE/file" "$TESTSPACE/$linkname"
   [ "$status" -eq 0 ]
-  [ $(echo "${lines[1]}" | grep "Stub sudo" | wc -l) -eq 1 ]
+  [ $(echo "${lines[1]}" | grep "sudo mv .*link .*link.backup-.*" | wc -l) -eq 1 ]
   [ $(echo "${lines[2]}" | grep "Create backup" | wc -l) -eq 1 ]
-  [ $(echo "${lines[3]}" | grep "Stub sudo" | wc -l) -eq 1 ]
-  [ $(echo "${lines[4]}" | grep "Stub sudo" | wc -l) -eq 1 ]
+  [ $(echo "${lines[3]}" | grep "sudo mkdir.*" | wc -l) -eq 1 ]
+  [ $(echo "${lines[4]}" | grep "sudo ln .*file .*link" | wc -l) -eq 1 ]
   [ $(echo "${lines[5]}" | grep "Create link" | wc -l) -eq 1 ]
 }
 
 @test 'sudo function should use sudo command for every argument other than link' {
-  stub sudo 'Stub sudo command'
-  SUDO_CMD="$BATS_TEST_DIRNAME/stub/sudo"
-  run sudo random_command
-  [ $(echo "${lines[@]}" | grep "Stub sudo" | wc -l) -eq 1 ]
+  stub_sudo
+  run sudo date
+  [ $(echo "${lines[@]}" | grep "sudo date" | wc -l) -eq 1 ]
   [ "$status" -eq 0 ]
 }
 
@@ -263,6 +261,22 @@ teardown() {
   run __main remove
   [ "$status" -eq 0 ]
   [ $(grep 'file.orig' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
+  [ ! -e "$TEST_JOURNAL" ]
+}
+
+@test 'remove operation should revert journal entries that where created with sudo' {
+  stub_sudo
+  local linkname='link'
+  printf 'file.orig\n' > "$TESTSPACE/$linkname"
+  printf 'file.linked\n' > "$TESTSPACE/file"
+  run sudo link "$TESTSPACE/file" "$linkname"
+  [ $(cat "$TEST_JOURNAL" | wc -l) -eq 2 ]
+  [ $(echo "${lines[3]}" | grep "sudo ln.*file link" | wc -l) -eq 1 ]
+  run __main remove
+  [ "$status" -eq 0 ]
+  [ $(grep 'file.orig' "$TESTSPACE/$linkname" | wc -l) -eq 1 ]
+  [ $(echo "${lines[1]}" | grep "sudo rm link" | wc -l) -eq 1 ]
+  [ $(echo "${lines[3]}" | grep "sudo mv -n link.backup-.* link" | wc -l) -eq 1 ]
   [ ! -e "$TEST_JOURNAL" ]
 }
 

@@ -171,10 +171,10 @@ __revert_recorded_actions() {
 }
 
 __revert_action() {
-  local user="$(__extract_field "$1" "1")"
+  local user="$(__extract_field "$1" "2")"
   local action="$(__extract_field "$1" "3")"
   local args="$(__extract_field "$1" "4-")"
-  [ "$user" == "root" ] && local sudo_revert="sudo "
+  [ "$user" == "root" ] && local sudo_revert="$SUDO_CMD "
   case "$action" in
     "$ACTION_LINK")
       __remove_link "${sudo_revert:-}" "$args"

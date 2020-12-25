@@ -17,3 +17,9 @@ stub_curl_and_wget() {
   stub curl "bash: curl: command not found" 127 2
   stub wget "bash: wget: command not found" 127 2
 }
+
+stub_sudo() {
+  stub sudo ""
+  echo 'echo "sudo $*";eval $*' > "$BATS_TEST_DIRNAME/stub/sudo"
+  SUDO_CMD="$BATS_TEST_DIRNAME/stub/sudo"
+}
