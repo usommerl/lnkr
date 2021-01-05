@@ -6,7 +6,7 @@
 
 *lnkr* is a set of shell functions that help with installation and removal of configuration files. A widespread pattern for managing such files is to keep them in a *git* repository and create a symlink for each file at the correct filesystem location. *lnkr* is intended for this scenario and takes care of the symlinks.
 
-**Wait, I can write my own shell script that uses *ln*. Why should I care?**
+<!--**Wait, I can write my own shell script that uses *ln*. Why should I care?**-->
 
 ### Dependencies
 The following tools are required in order to use *lnkr*:
