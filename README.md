@@ -2,6 +2,7 @@
 
 [![GitHub version](https://img.shields.io/github/release/usommerl/lnkr.svg?style=for-the-badge)](https://github.com/usommerl/lnkr/releases)
 [![build](https://img.shields.io/github/workflow/status/usommerl/lnkr/ci?style=for-the-badge)](https://github.com/usommerl/lnkr/actions?query=workflow%3Aci)
+[![build](https://img.shields.io/github/actions/workflow/status/usommerl/lnkr/ci.yml?branch=develop&style=for-the-badge)](https://github.com/usommerl/lnkr/actions?query=workflow%3Aci)
 [![codecov](https://img.shields.io/codecov/c/github/usommerl/lnkr?style=for-the-badge)](https://codecov.io/gh/usommerl/lnkr)
 
 *lnkr* is a set of shell functions that help with installation and removal of configuration files. A widespread pattern for managing such files is to keep them in a *git* repository and create a symlink for each file at the correct filesystem location. *lnkr* is intended for this scenario and takes care of the symlinks.
